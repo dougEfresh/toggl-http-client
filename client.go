@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// Toggl Client Definition
 type Client struct {
 	Id       uint64 `json:"id"`
 	WId      uint64 `json:"wid"`
@@ -14,16 +15,9 @@ type Client struct {
 
 type Clients []Client
 
-type TogglClient struct {
-	thc             *TogglHttpClient
-	clientEndpoint  string
-	listTransport   ClientLister
-	getTransport    ClientGetter
-	updateTransport ClientUpdater
-	createTransport ClientCreater
-	deleteTransport ClientDeleter
-}
-
+//Return a Toggl Client. An error is also returned when some configuration option is invalid
+//    thc,err := gtoggl.NewClient("token")
+//    tc,err := gtoggl.NewTogglClient(tc)
 func NewTogglClient(thc *TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
 	tc := &TogglClient{
 		thc:             thc,
@@ -43,6 +37,18 @@ func NewTogglClient(thc *TogglHttpClient, options ...ToggleClientOptionFunc) (*T
 	tc.clientEndpoint = thc.Url + "/clients"
 	return tc, nil
 }
+
+type TogglClient struct {
+	thc             *TogglHttpClient
+	clientEndpoint  string
+	listTransport   ClientLister
+	getTransport    ClientGetter
+	updateTransport ClientUpdater
+	createTransport ClientCreater
+	deleteTransport ClientDeleter
+}
+
+
 
 func (tc *TogglClient) List() (Clients, error) {
 	return tc.listTransport.List(tc)
