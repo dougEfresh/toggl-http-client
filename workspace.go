@@ -34,8 +34,6 @@ func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFun
 	return ws, nil
 }
 
-
-
 type WorkspaceClient struct {
 	tc                *TogglHttpClient
 	workspaceEndpoint string
