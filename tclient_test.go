@@ -6,8 +6,8 @@ import (
 )
 
 func mockMe() mockFunc {
-	return func(req *http.Request) string {
-		return ""
+	return func(req *http.Request) []byte {
+		return nullResponse
 	}
 }
 
@@ -16,13 +16,14 @@ func TestClientDefaults(t *testing.T) {
 	if err == nil {
 		t.Fatal("Error should have been thrown. No Token given")
 	}
+
 	httpClient := &http.Client{Transport: newMockTransport(mockMe())}
 	client, err = NewClient("abc1234567890def", SetURL("https://blah"), SetErrorLogger(testLogger),SetTraceLogger(testLogger),SetInfoLogger(testLogger), SetHttpClient(httpClient))
 	if err != nil {
 		panic(err)
 	}
-	if client.url != "https://blah" {
-		t.Error("Url not blah; "+ client.url)
+	if client.Url != "https://blah" {
+		t.Error("Url not blah; "+ client.Url)
 	}
 	if client.traceLog != testLogger || client.errorLog != testLogger || client.infoLog != testLogger {
 		t.Error("Loggers not set ")
