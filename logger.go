@@ -10,7 +10,6 @@ type Logger interface {
 	Printf(format string, v ...interface{})
 }
 
-
 // errorf logs to the error log.
 func (c *TogglClient) errorf(format string, args ...interface{}) {
 	if c.errorLog != nil {
