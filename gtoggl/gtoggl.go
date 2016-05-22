@@ -28,6 +28,6 @@ func workspace(tc *gtoggl.TogglClient) {
 	if err  != err {
 
 	}
-	
+
 	fmt.Println(wsc.List())
 }
