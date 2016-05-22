@@ -1,31 +1,20 @@
 // Gtoggl - A go client library for toggl
-package gtoggl
-
 /*
-import "github/dougEfresh/gtoggl"
+Package provides access to toggl REST API
+https://github.com/toggl/toggl_api_docs
 
-func main() {
-	client, err := NewClient("")
-	if err == nil {
-		t.Fatal("Error should have been thrown. No Token given")
-	}
-	client, err = NewClient("test-token")
+Example:
+	import "github/dougEfresh/gtoggl"
 
-	if client == nil {
-		t.Fatal(err)
-	}
-
-	if len(client.token) < 1 {
-		t.Errorf("Token not defined %d", len(client.token))
-	}
-}
-
-
-package main
-
-import "testing"
-
-func TestClientDefaults(t *testing.T) {
-
-}
+		func main() {
+			thc, err := NewClient("token")
+			...
+			wsc, err := NewWorkspaceClient("token")
+		...
+			workspaces,err := wsc.List()
+			if err == nil {
+			panic(err)
+			}
+		}
 */
+package gtoggl

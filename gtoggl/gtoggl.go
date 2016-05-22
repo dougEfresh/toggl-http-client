@@ -9,11 +9,11 @@ import (
 	"strconv"
 )
 
-type Debugger struct {
+type debugger struct {
 	debug bool
 }
 
-func (l *Debugger) Printf(format string, v ...interface{}) {
+func (l *debugger) Printf(format string, v ...interface{}) {
 	if l.debug {
 		fmt.Printf(format, v)
 	}
@@ -24,7 +24,7 @@ func main() {
 	var token = flag.String("t", "", "Toggl API token: https://www.toggl.com/app/profile")
 	var command = flag.String("c", "workspace", "Sub command: workspace,client,project...etc ")
 	flag.Parse()
-	tc, err := gtoggl.NewClient(*token, gtoggl.SetTraceLogger(&Debugger{debug: *debug}))
+	tc, err := gtoggl.NewClient(*token, gtoggl.SetTraceLogger(&debugger{debug: *debug}))
 	if err != nil {
 		fmt.Fprint(os.Stderr, "A token is required\n")
 		flag.Usage()
