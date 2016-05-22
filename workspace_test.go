@@ -5,69 +5,43 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"testing"
 )
 
-type TestLogger struct {
-}
-
-func (l *TestLogger) Printf(format string, v ...interface{}) {
-	fmt.Printf(format, v)
-}
-
-var l = &TestLogger{}
-
-type mockTransport struct{}
-
-func newMockTransport() http.RoundTripper {
-	return &mockTransport{}
-}
-
-func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Create mocked http.Response
-	response := &http.Response{Header: make(http.Header), Request: req, StatusCode: http.StatusOK}
-	response.Header.Set("Content-Type", "application/json")
-	responseBody := GetResponse(req)
-	response.Body = ioutil.NopCloser(strings.NewReader(responseBody))
-	return response, nil
-}
-
-func GetResponse(req *http.Request) string {
-	r := fmt.Sprintf("%s %s", req.Method, req.URL.Path)
-	if r == "GET /api/v8/workspaces" {
-		b, err := ioutil.ReadFile("mock/workspaces.json")
-		if err != nil {
-			panic(err)
+func GetResponse() mockFunc {
+	return func(req *http.Request) string {
+		r := fmt.Sprintf("%s %s", req.Method, req.URL.Path)
+		if r == "GET /api/v8/workspaces" {
+			b, err := ioutil.ReadFile("mock/workspaces.json")
+			if err != nil {
+				panic(err)
+			}
+			return string(b)
 		}
-		return string(b)
-	}
 
-	if r == "GET /api/v8/workspaces/1" {
-		b, err := ioutil.ReadFile("mock/workspace.json")
-		if err != nil {
-			panic(err)
+		if r == "GET /api/v8/workspaces/1" {
+			b, err := ioutil.ReadFile("mock/workspace.json")
+			if err != nil {
+				panic(err)
+			}
+			return string(b)
 		}
-		return string(b)
-	}
-	if r == "PUT /api/v8/workspaces/1" {
-		b, err := ioutil.ReadFile("mock/workspace_update.json")
-		if err != nil {
-			panic(err)
+		if r == "PUT /api/v8/workspaces/1" {
+			b, err := ioutil.ReadFile("mock/workspace_update.json")
+			if err != nil {
+				panic(err)
+			}
+			return string(b)
 		}
-		return string(b)
-	}
 
-	panic(errors.New("Cannot mock an unknown request"))
+		panic(errors.New("Cannot mock an unknown request"))
+	}
 }
+
 
 func workspaceClient() *WorkspaceClient {
-	httpClient := &http.Client{Transport: newMockTransport()}
-	client, err := NewClient("abc1234567890def", SetTraceLogger(l), SetHttpClient(httpClient))
-	if err != nil {
-		panic(err)
-	}
-	ws, err := NewWorkspaceClient(SetTogglClient(client))
+	client := mockClient(GetResponse())
+	ws, err := NewWorkspaceClient(client)
 	if err != nil {
 		panic(err)
 	}

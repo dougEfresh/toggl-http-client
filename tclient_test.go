@@ -1,19 +1,24 @@
 package gtoggl
 
-import "testing"
+import (
+	"testing"
+	"net/http"
+)
+
+func mockMe() mockFunc {
+	return func (req *http.Request) string {
+		return ""
+	}
+}
 
 func TestClientDefaults(t *testing.T) {
-	client, err := NewClient("")
+	client , err := NewClient("")
 	if err == nil {
 		t.Fatal("Error should have been thrown. No Token given")
 	}
-	client, err = NewClient("test-token")
+	client = mockClient(mockMe())
 
-	if client == nil {
-		t.Fatal(err)
-	}
-
-	if len(client.token) < 1 {
-		t.Errorf("Token not defined %d", len(client.token))
+	if len(client.sessionCookie) < 1 {
+		t.Errorf("Token not defined %d", len(client.sessionCookie))
 	}
 }
