@@ -1,7 +1,6 @@
 package gtoggl
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -34,7 +33,7 @@ func GetResponse() mockFunc {
 			return string(b)
 		}
 
-		panic(errors.New("Cannot mock an unknown request"))
+		return "{}"
 	}
 }
 
@@ -51,10 +50,10 @@ func TestWorkspaceList(t *testing.T) {
 	workspaceClient := workspaceClient()
 	workspaces, err := workspaceClient.List()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if len(workspaces) != 2 {
-		t.Error("Workspace is not 2")
+		t.Fatal("Workspace is not 2")
 	}
 	if workspaces[0].Id != 1 {
 		t.Error("Workspace Id is not 1")
