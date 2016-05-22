@@ -6,17 +6,17 @@ import (
 )
 
 type WorkspaceLister interface {
-	List(tc *TogglClient) ([]Workspace, error)
+	List(wsc *WorkspaceClient) ([]Workspace, error)
 }
 type WorkspaceGetter interface {
-	Get(tc *TogglClient, id uint64, wtype string) (Workspace, error)
+	Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error)
 }
 type WorkspaceUpdater interface {
-	Update(tc *TogglClient, ws Workspace) (Workspace, error)
+	Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error)
 }
 
-func (wl *WorkspaceTransport) Get(tc *TogglClient, id uint64, wtype string) (Workspace, error) {
-	body, err := tc.GetRequest(fmt.Sprintf("%s/%d", workspaceUrl, id))
+func (wl *WorkspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error) {
+	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d",wsc.workspaceEndpoint, id))
 	if err != nil {
 		return Workspace{}, err
 	}
@@ -26,8 +26,8 @@ func (wl *WorkspaceTransport) Get(tc *TogglClient, id uint64, wtype string) (Wor
 	return aux.Data, err
 }
 
-func (wl *WorkspaceTransport) List(tc *TogglClient) ([]Workspace, error) {
-	body, err := tc.GetRequest(workspaceUrl)
+func (wl *WorkspaceTransport) List(wsc *WorkspaceClient) ([]Workspace, error) {
+	body, err := wsc.tc.GetRequest(wsc.workspaceEndpoint)
 	var workspaces []Workspace
 	if err != nil {
 		return workspaces, err
@@ -36,13 +36,13 @@ func (wl *WorkspaceTransport) List(tc *TogglClient) ([]Workspace, error) {
 	return workspaces, err
 }
 
-func (wl *WorkspaceTransport) Update(tc *TogglClient, ws Workspace) (Workspace, error) {
+func (wl *WorkspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error) {
 	put := workspace_update_request{Workspace: ws}
 	body, err := json.Marshal(put)
 	if err != nil {
 		return Workspace{}, err
 	}
-	response, err := tc.PutRequest(fmt.Sprintf("%s/%d", workspaceUrl, ws.Id), body)
+	response, err := wsc.tc.PutRequest(fmt.Sprintf("%s/%d", wsc.workspaceEndpoint, ws.Id), body)
 	if err != nil {
 		return Workspace{}, err
 	}
@@ -53,6 +53,7 @@ func (wl *WorkspaceTransport) Update(tc *TogglClient, ws Workspace) (Workspace, 
 
 type WorkspaceClient struct {
 	tc              *TogglClient
+	workspaceEndpoint string
 	listTransport   WorkspaceLister
 	getTransport    WorkspaceGetter
 	updateTransport WorkspaceUpdater
@@ -80,6 +81,7 @@ func NewWorkspaceClient(tc *TogglClient, options ...WorkspaceClientOptionFunc) (
 			return nil, err
 		}
 	}
+	ws.workspaceEndpoint = DefaultUrl + "/workspaces"
 	return ws, nil
 }
 
@@ -111,18 +113,16 @@ type workspace_update_request struct {
 	Workspace Workspace `json:"workspace"`
 }
 
-var workspaceUrl = DefaultUrl + "/workspaces"
-
 func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
-	return wc.getTransport.Get(wc.tc, id, "")
+	return wc.getTransport.Get(wc, id, "")
 }
 
 func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
-	return wc.updateTransport.Update(wc.tc, ws)
+	return wc.updateTransport.Update(wc, ws)
 }
 
 func (wc *WorkspaceClient) List() ([]Workspace, error) {
-	return wc.listTransport.List(wc.tc)
+	return wc.listTransport.List(wc)
 }
 
 func (ws *WorkspaceClient) String() string {
