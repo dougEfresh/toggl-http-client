@@ -33,13 +33,64 @@ func main() {
 	if *command == "workspace" {
 		workspace(tc, flag.Args())
 	}
+	if *command == "client" {
+		client(tc, flag.Args())
+	}
 }
 
 func handleError(error error) {
 	if error != nil {
-		fmt.Fprint(os.Stderr, error)
+		fmt.Fprintln(os.Stderr, error)
 		os.Exit(-1)
 	}
+}
+
+func client(tc *gtoggl.TogglHttpClient, args []string) {
+	c, err := gtoggl.NewTogglClient(tc)
+	var client gtoggl.Client
+	handleError(err)
+	if len(args) == 0 || args[0] == "list" {
+		clients, err := c.List()
+		handleError(err)
+		fmt.Printf("%+v\n", clients)
+	}
+
+	if (args[0] == "create" && len(args) > 1) {
+		err = json.Unmarshal([]byte(args[1]),&client)
+		handleError(err)
+		client, err = c.Create(&client)
+		handleError(err)
+		fmt.Printf("%+v\n", client)
+	}
+
+
+	if (args[0] == "update" && len(args) > 1) {
+		err = json.Unmarshal([]byte(args[1]),&client)
+		handleError(err)
+		_, err = c.Get(client.Id)
+		handleError(err)
+		client, err = c.Update(&client)
+		handleError(err)
+		fmt.Printf("%+v\n", client)
+	}
+
+
+	if (args[0] == "get" && len(args) > 1) {
+		i, err := strconv.ParseUint(args[1], 0, 64)
+		handleError(err)
+		client,err = c.Get(i)
+		handleError(err)
+		fmt.Printf("%+v\n", client)
+	}
+
+	if (args[0] == "delete" && len(args) > 1) {
+		i, err := strconv.ParseUint(args[1], 0, 64)
+		handleError(err)
+		err = c.Delete(i)
+		handleError(err)
+		fmt.Printf("%+v  deleted\n", i)
+	}
+
 }
 
 func workspace(tc *gtoggl.TogglHttpClient, args []string) {
@@ -59,13 +110,13 @@ func workspace(tc *gtoggl.TogglHttpClient, args []string) {
 		fmt.Printf("%+v\n", w)
 		return
 	}
+
 	if args[0] == "update" && len(args) > 1 {
-		i, err := strconv.ParseUint(args[1], 0, 64)
+		var uWs  gtoggl.Workspace
 		handleError(err)
-		ws, err := wsc.Get(i)
-		var uWs = gtoggl.Workspace{Id: ws.Id, Name: ws.Name, Premium: ws.Premium}
+		err = json.Unmarshal([]byte(args[1]), &uWs)
 		handleError(err)
-		err = json.Unmarshal([]byte(args[2]), &uWs)
+		_, err := wsc.Get(uWs.Id)
 		handleError(err)
 		uWs, err = wsc.Update(uWs)
 		handleError(err)
