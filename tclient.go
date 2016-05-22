@@ -64,14 +64,11 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglClient, error) {
 		return nil, err
 	}
 
-	if c.url != DefaultUrl {
-		workspaceUrl = c.url + "/workspaces"
-	}
 	return c, nil
 }
 
 // SetHttpClient can be used to specify the http.Client to use when making
-// HTTP requests to Elasticsearch.
+// HTTP requests to Toggl
 func SetHttpClient(httpClient *http.Client) ClientOptionFunc {
 	return func(c *TogglClient) error {
 		if httpClient != nil {
@@ -83,9 +80,7 @@ func SetHttpClient(httpClient *http.Client) ClientOptionFunc {
 	}
 }
 
-// SetURL defines the URL endpoints of the Elasticsearch nodes. Notice that
-// when sniffing is enabled, these URLs are used to initially sniff the
-// cluster on startup.
+// SetURL defines the base URL. See DefaultUrl
 func SetURL(url string) ClientOptionFunc {
 	return func(c *TogglClient) error {
 		switch len(url) {
@@ -98,6 +93,7 @@ func SetURL(url string) ClientOptionFunc {
 	}
 }
 
+//Custom logger to print HTTP requests
 func SetTraceLogger(l Logger) ClientOptionFunc {
 	return func(c *TogglClient) error {
 		c.traceLog = l
@@ -105,6 +101,23 @@ func SetTraceLogger(l Logger) ClientOptionFunc {
 	}
 }
 
+//Custom logger to handle error messages
+func SetErrorLogger(l Logger) ClientOptionFunc {
+	return func(c *TogglClient) error {
+		c.errorLog = l
+		return nil
+	}
+}
+
+//Custom logger to handle info messages
+func SetInfoLogger(l Logger) ClientOptionFunc {
+	return func(c *TogglClient) error {
+		c.infoLog = l
+		return nil
+	}
+}
+
+// Returns the session cookie
 func (c *TogglClient) String() string {
 	return fmt.Sprintf("{sessionCookie=%s}", c.sessionCookie)
 }
@@ -155,18 +168,22 @@ func request(c *TogglClient, method, endpoint string, body []byte) ([]byte, erro
 	return ioutil.ReadAll(resp.Body)
 }
 
+// Utility to POST requests
 func (c *TogglClient) PostRequest(endpoint string, body []byte) ([]byte, error) {
 	return request(c, "POST", endpoint, body)
 }
 
+// Utility to DELETE requests
 func (c *TogglClient) DeleteRequest(endpoint string, body []byte) ([]byte, error) {
 	return request(c, "DELETE", endpoint, body)
 }
 
+// Utility to PUT requests
 func (c *TogglClient) PutRequest(endpoint string, body []byte) ([]byte, error) {
 	return request(c, "PUT", endpoint, body)
 }
 
+// Utility to GET requests
 func (c *TogglClient) GetRequest(endpoint string) ([]byte, error) {
 	return request(c, "GET", endpoint, nil)
 }
