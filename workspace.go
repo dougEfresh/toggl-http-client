@@ -37,7 +37,7 @@ func (wl *WorkspaceTransport) List(tc *TogglClient) ([]Workspace, error) {
 }
 
 func (wl *WorkspaceTransport) Update(tc *TogglClient, ws Workspace) (Workspace, error) {
-	put := workspace_update_request{workspace: ws}
+	put := workspace_update_request{Workspace: ws}
 	body, err := json.Marshal(put)
 	if err != nil {
 		return Workspace{}, err
