@@ -1,21 +1,22 @@
 package gtoggl
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"bytes"
 )
 
 type TestLogger struct {
 }
-var _,debugMode = os.LookupEnv("GTOGGL_TEST_DEBUG")
+
+var _, debugMode = os.LookupEnv("GTOGGL_TEST_DEBUG")
 
 func (l *TestLogger) Printf(format string, v ...interface{}) {
-	if (debugMode) {
+	if debugMode {
 		fmt.Printf(format, v)
 	}
 }
@@ -36,8 +37,8 @@ func newMockTransport(f mockFunc) http.RoundTripper {
 
 func visit(path string, f os.FileInfo, err error) error {
 	if !f.IsDir() {
-		mockResponses[path] ,err = ioutil.ReadFile(path)
-		if (err != nil) {
+		mockResponses[path], err = ioutil.ReadFile(path)
+		if err != nil {
 			return err
 		}
 	}
@@ -60,7 +61,7 @@ func load() {
 		return
 	}
 	err := filepath.Walk("mock", visit)
-	if (err != nil) {
+	if err != nil {
 		panic(err)
 	}
 }

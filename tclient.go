@@ -151,10 +151,10 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 		}
 	}
 
-	if (resp.StatusCode >= 400) {
+	if resp.StatusCode >= 400 {
 		defer resp.Body.Close()
-		b,_ :=ioutil.ReadAll(resp.Body)
-		return nil,&TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
+		b, _ := ioutil.ReadAll(resp.Body)
+		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
 	}
 
 	return nil, nil
