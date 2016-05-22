@@ -14,6 +14,56 @@ type Client struct {
 
 type Clients []Client
 
+type TogglClient struct {
+	thc             *TogglHttpClient
+	clientEndpoint  string
+	listTransport   ClientLister
+	getTransport    ClientGetter
+	updateTransport ClientUpdater
+	createTransport ClientCreater
+	deleteTransport ClientDeleter
+}
+
+func NewTogglClient(thc *TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
+	tc := &TogglClient{
+		thc:             thc,
+		listTransport:   defaultClientTransport,
+		getTransport:    defaultClientTransport,
+		updateTransport: defaultClientTransport,
+		createTransport: defaultClientTransport,
+		deleteTransport: defaultClientTransport,
+	}
+	// Run the options on it
+
+	for _, option := range options {
+		if err := option(tc); err != nil {
+			return nil, err
+		}
+	}
+	tc.clientEndpoint = thc.Url + "/clients"
+	return tc, nil
+}
+
+func (tc *TogglClient) List() (Clients, error) {
+	return tc.listTransport.List(tc)
+}
+
+func (tc *TogglClient) Get(id uint64) (Client, error) {
+	return tc.getTransport.Get(tc, id)
+}
+
+func (tc *TogglClient) Create(c *Client) (Client, error) {
+	return tc.createTransport.Create(tc, c)
+}
+
+func (tc *TogglClient) Update(c *Client) (Client, error) {
+	return tc.updateTransport.Update(tc, c)
+}
+
+func (tc *TogglClient) Delete(id uint64) error {
+	return tc.deleteTransport.Delete(tc, id)
+}
+
 type ClientLister interface {
 	List(tc *TogglClient) (Clients, error)
 }
@@ -27,7 +77,7 @@ type ClientCreater interface {
 	Create(tc *TogglClient, c *Client) (Client, error)
 }
 type ClientDeleter interface {
-	Delete(tc *TogglClient, id uint64)  error
+	Delete(tc *TogglClient, id uint64) error
 }
 
 // ClientOptionFunc is a function that configures a Client.
@@ -36,6 +86,7 @@ type ToggleClientOptionFunc func(*TogglClient) error
 type clientTransport struct{}
 
 var defaultClientTransport = &clientTransport{}
+
 type clientResponse struct {
 	Data Client `json:"data"`
 }
@@ -45,7 +96,6 @@ type clientRequest struct {
 type clientCreateRequest struct {
 	Client Client `json:"client"`
 }
-
 
 func (cl *clientTransport) Get(tc *TogglClient, id uint64) (Client, error) {
 	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id))
@@ -59,7 +109,7 @@ func (cl *clientTransport) Get(tc *TogglClient, id uint64) (Client, error) {
 }
 
 func (cl *clientTransport) Delete(tc *TogglClient, id uint64) error {
-	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id,),nil)
+	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id), nil)
 	return err
 }
 
@@ -101,54 +151,4 @@ func (cl *clientTransport) Create(tc *TogglClient, c *Client) (Client, error) {
 	var aux clientResponse
 	err = json.Unmarshal(response, &aux)
 	return aux.Data, err
-}
-
-type TogglClient struct {
-	thc             *TogglHttpClient
-	clientEndpoint  string
-	listTransport   ClientLister
-	getTransport    ClientGetter
-	updateTransport ClientUpdater
-	createTransport ClientCreater
-	deleteTransport ClientDeleter
-}
-
-func NewTogglClient(thc *TogglHttpClient, options...ToggleClientOptionFunc) (*TogglClient,error) {
-	tc := &TogglClient{
-		thc:              thc,
-		listTransport:   defaultClientTransport,
-		getTransport:    defaultClientTransport,
-		updateTransport: defaultClientTransport,
-		createTransport: defaultClientTransport,
-		deleteTransport: defaultClientTransport,
-	}
-	// Run the options on it
-
-	for _, option := range options {
-		if err := option(tc); err != nil {
-			return nil, err
-		}
-	}
-	tc.clientEndpoint = thc.Url + "/clients"
-	return tc, nil
-}
-
-func (tc *TogglClient) List() (Clients,error) {
-	return tc.listTransport.List(tc)
-}
-
-func (tc *TogglClient) Get(id uint64) (Client,error) {
-	return tc.getTransport.Get(tc,id)
-}
-
-func (tc *TogglClient) Create(c *Client) (Client,error) {
-	return tc.createTransport.Create(tc,c)
-}
-
-func (tc *TogglClient) Update(c *Client) (Client,error) {
-	return tc.updateTransport.Update(tc,c)
-}
-
-func (tc *TogglClient) Delete(id uint64) error {
-	return tc.deleteTransport.Delete(tc,id)
 }
