@@ -14,6 +14,6 @@ func TestClientDefaults(t *testing.T) {
 	}
 
 	if len(client.token) < 1 {
-		t.Error("Token not defined %d", len(client.token))
+		t.Errorf("Token not defined %d", len(client.token))
 	}
 }
