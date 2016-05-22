@@ -38,7 +38,6 @@ func GetResponse() mockFunc {
 	}
 }
 
-
 func workspaceClient() *WorkspaceClient {
 	client := mockClient(GetResponse())
 	ws, err := NewWorkspaceClient(client)

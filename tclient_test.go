@@ -1,18 +1,18 @@
 package gtoggl
 
 import (
-	"testing"
 	"net/http"
+	"testing"
 )
 
 func mockMe() mockFunc {
-	return func (req *http.Request) string {
+	return func(req *http.Request) string {
 		return ""
 	}
 }
 
 func TestClientDefaults(t *testing.T) {
-	client , err := NewClient("")
+	client, err := NewClient("")
 	if err == nil {
 		t.Fatal("Error should have been thrown. No Token given")
 	}
