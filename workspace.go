@@ -52,7 +52,7 @@ func (wl *WorkspaceTransport) Update(tc *TogglClient, ws Workspace) (Workspace, 
 }
 
 type WorkspaceClient struct {
-	c               *TogglClient
+	tc              *TogglClient
 	listTransport   WorkspaceLister
 	getTransport    WorkspaceGetter
 	updateTransport WorkspaceUpdater
@@ -66,8 +66,9 @@ type WorkspaceTransport struct {
 
 var defaultTransport = &WorkspaceTransport{}
 
-func NewWorkspaceClient(options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
+func NewWorkspaceClient(tc *TogglClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
 	ws := &WorkspaceClient{
+		tc: tc,
 		listTransport:   defaultTransport,
 		getTransport:    defaultTransport,
 		updateTransport: defaultTransport,
@@ -84,7 +85,7 @@ func NewWorkspaceClient(options ...WorkspaceClientOptionFunc) (*WorkspaceClient,
 
 func SetTogglClient(tc *TogglClient) WorkspaceClientOptionFunc {
 	return func(ws *WorkspaceClient) error {
-		ws.c = tc
+		ws.tc = tc
 		return nil
 	}
 }
@@ -113,17 +114,17 @@ type workspace_update_request struct {
 var workspaceUrl = DefaultUrl + "/workspaces"
 
 func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
-	return wc.getTransport.Get(wc.c, id, "")
+	return wc.getTransport.Get(wc.tc, id, "")
 }
 
 func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
-	return wc.updateTransport.Update(wc.c, ws)
+	return wc.updateTransport.Update(wc.tc, ws)
 }
 
 func (wc *WorkspaceClient) List() ([]Workspace, error) {
-	return wc.listTransport.List(wc.c)
+	return wc.listTransport.List(wc.tc)
 }
 
 func (ws *WorkspaceClient) String() string {
-	return fmt.Sprintf("workspace:{togglClient: %s}", ws.c)
+	return fmt.Sprintf("workspace:{togglClient: %s}", ws.tc)
 }
