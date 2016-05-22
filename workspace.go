@@ -68,7 +68,7 @@ var defaultTransport = &WorkspaceTransport{}
 
 func NewWorkspaceClient(tc *TogglClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
 	ws := &WorkspaceClient{
-		tc: tc,
+		tc:              tc,
 		listTransport:   defaultTransport,
 		getTransport:    defaultTransport,
 		updateTransport: defaultTransport,

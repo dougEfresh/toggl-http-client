@@ -16,7 +16,7 @@ func main() {
 
 	tc, err := gtoggl.NewClient(token.Value.String())
 	if err != nil {
-		fmt.Fprint(os.Stderr,"A token is required\n")
+		fmt.Fprint(os.Stderr, "A token is required\n")
 		flag.Usage()
 		os.Exit(-1)
 	}
@@ -25,7 +25,7 @@ func main() {
 
 func workspace(tc *gtoggl.TogglClient) {
 	wsc, err := gtoggl.NewWorkspaceClient(tc)
-	if err  != err {
+	if err != err {
 
 	}
 
