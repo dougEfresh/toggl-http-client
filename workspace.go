@@ -15,7 +15,7 @@ type WorkspaceUpdater interface {
 	Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error)
 }
 
-func (wl *WorkspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error) {
+func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error) {
 	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d",wsc.workspaceEndpoint, id))
 	if err != nil {
 		return Workspace{}, err
@@ -26,7 +26,7 @@ func (wl *WorkspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string)
 	return aux.Data, err
 }
 
-func (wl *WorkspaceTransport) List(wsc *WorkspaceClient) ([]Workspace, error) {
+func (wl *workspaceTransport) List(wsc *WorkspaceClient) ([]Workspace, error) {
 	body, err := wsc.tc.GetRequest(wsc.workspaceEndpoint)
 	var workspaces []Workspace
 	if err != nil {
@@ -36,7 +36,7 @@ func (wl *WorkspaceTransport) List(wsc *WorkspaceClient) ([]Workspace, error) {
 	return workspaces, err
 }
 
-func (wl *WorkspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error) {
+func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error) {
 	put := workspace_update_request{Workspace: ws}
 	body, err := json.Marshal(put)
 	if err != nil {
@@ -52,7 +52,7 @@ func (wl *WorkspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Worksp
 }
 
 type WorkspaceClient struct {
-	tc              *TogglClient
+	tc              *TogglHttpClient
 	workspaceEndpoint string
 	listTransport   WorkspaceLister
 	getTransport    WorkspaceGetter
@@ -62,12 +62,12 @@ type WorkspaceClient struct {
 // ClientOptionFunc is a function that configures a Client.
 // It is used in NewWorkspaceClient.
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
-type WorkspaceTransport struct {
+type workspaceTransport struct {
 }
 
-var defaultTransport = &WorkspaceTransport{}
+var defaultTransport = &workspaceTransport{}
 
-func NewWorkspaceClient(tc *TogglClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
+func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
 	ws := &WorkspaceClient{
 		tc:              tc,
 		listTransport:   defaultTransport,
@@ -81,7 +81,7 @@ func NewWorkspaceClient(tc *TogglClient, options ...WorkspaceClientOptionFunc) (
 			return nil, err
 		}
 	}
-	ws.workspaceEndpoint = DefaultUrl + "/workspaces"
+	ws.workspaceEndpoint = tc.Url + "/workspaces"
 	return ws, nil
 }
 

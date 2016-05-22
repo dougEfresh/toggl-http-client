@@ -1,44 +1,11 @@
 package gtoggl
 
 import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"testing"
 )
 
-func GetResponse() mockFunc {
-	return func(req *http.Request) string {
-		r := fmt.Sprintf("%s %s", req.Method, req.URL.Path)
-		if r == "GET /api/v8/workspaces" {
-			b, err := ioutil.ReadFile("mock/workspaces.json")
-			if err != nil {
-				panic(err)
-			}
-			return string(b)
-		}
-
-		if r == "GET /api/v8/workspaces/1" {
-			b, err := ioutil.ReadFile("mock/workspace.json")
-			if err != nil {
-				panic(err)
-			}
-			return string(b)
-		}
-		if r == "PUT /api/v8/workspaces/1" {
-			b, err := ioutil.ReadFile("mock/workspace_update.json")
-			if err != nil {
-				panic(err)
-			}
-			return string(b)
-		}
-
-		return "{}"
-	}
-}
-
 func workspaceClient() *WorkspaceClient {
-	client := mockClient(GetResponse())
+	client := mockClient()
 	ws, err := NewWorkspaceClient(client)
 	if err != nil {
 		panic(err)
