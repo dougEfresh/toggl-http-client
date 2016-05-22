@@ -42,7 +42,7 @@ func handleError(error error) {
 	}
 }
 
-func workspace(tc *gtoggl.TogglClient, args []string) {
+func workspace(tc *gtoggl.TogglHttpClient, args []string) {
 	wsc, err := gtoggl.NewWorkspaceClient(tc)
 	handleError(err)
 	if len(args) == 0 || args[0] == "list" {

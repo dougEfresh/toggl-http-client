@@ -11,28 +11,28 @@ type Logger interface {
 }
 
 // errorf logs to the error log.
-func (c *TogglClient) errorf(format string, args ...interface{}) {
+func (c *TogglHttpClient) errorf(format string, args ...interface{}) {
 	if c.errorLog != nil {
 		c.errorLog.Printf(format, args...)
 	}
 }
 
 // infof logs informational messages.
-func (c *TogglClient) infof(format string, args ...interface{}) {
+func (c *TogglHttpClient) infof(format string, args ...interface{}) {
 	if c.infoLog != nil {
 		c.infoLog.Printf(format, args...)
 	}
 }
 
 // tracef logs to the trace log.
-func (c *TogglClient) tracef(format string, args ...interface{}) {
+func (c *TogglHttpClient) tracef(format string, args ...interface{}) {
 	if c.traceLog != nil {
 		c.traceLog.Printf(format, args...)
 	}
 }
 
 // dumpRequest dumps the given HTTP request to the trace log.
-func (c *TogglClient) dumpRequest(r *http.Request) {
+func (c *TogglHttpClient) dumpRequest(r *http.Request) {
 	if c.traceLog != nil {
 		out, err := httputil.DumpRequestOut(r, true)
 		if err == nil {
@@ -43,7 +43,7 @@ func (c *TogglClient) dumpRequest(r *http.Request) {
 }
 
 // dumpResponse dumps the given HTTP response to the trace log.
-func (c *TogglClient) dumpResponse(resp *http.Response) {
+func (c *TogglHttpClient) dumpResponse(resp *http.Response) {
 	if c.traceLog != nil {
 		out, err := httputil.DumpResponse(resp, true)
 		if err == nil {
