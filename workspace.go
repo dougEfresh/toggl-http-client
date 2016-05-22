@@ -51,6 +51,7 @@ func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
 func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
 	return wc.updateTransport.Update(wc, ws)
 }
+
 // https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
 func (wc *WorkspaceClient) List() (Workspaces, error) {
 	return wc.listTransport.List(wc)
@@ -60,10 +61,12 @@ func (wc *WorkspaceClient) List() (Workspaces, error) {
 type WorkspaceLister interface {
 	List(wsc *WorkspaceClient) (Workspaces, error)
 }
+
 // Ability to override the Get method. Not yet implemented
 type WorkspaceGetter interface {
 	Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error)
 }
+
 // Ability to override the Update method. Not yet implemented
 type WorkspaceUpdater interface {
 	Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error)
