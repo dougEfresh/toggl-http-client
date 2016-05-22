@@ -26,8 +26,18 @@ type TogglHttpClient struct {
 	traceLog      Logger       // trace log for debugging
 	password      string       // password for HTTP Basic Auth
 	maxRetries    uint
-	sessionCookie string       //24 hour session cookie
-	gzipEnabled   bool         // gzip compression enabled or disabled (default)
+	sessionCookie string //24 hour session cookie
+	gzipEnabled   bool   // gzip compression enabled or disabled (default)
+}
+
+type TogglError struct {
+	Code   int
+	Status string
+	Msg    string
+}
+
+func (e *TogglError) Error() string {
+	return fmt.Sprintf("%s\t%s\n", e.Status, e.Msg)
 }
 
 // ClientOptionFunc is a function that configures a Client.
@@ -141,10 +151,12 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 		}
 	}
 
-	defer resp.Body.Close()
-	if resp.Body != nil {
-		return ioutil.ReadAll(resp.Body)
+	if (resp.StatusCode >= 400) {
+		defer resp.Body.Close()
+		b,_ :=ioutil.ReadAll(resp.Body)
+		return nil,&TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
 	}
+
 	return nil, nil
 }
 
@@ -153,19 +165,26 @@ func request(c *TogglHttpClient, method, endpoint string, body []byte) ([]byte, 
 	if err != nil {
 		return nil, err
 	}
-	c.dumpRequest(req)
 	cookie := &http.Cookie{}
 	cookie.Name = "toggl_api_session_new"
 	cookie.Value = c.sessionCookie
 	req.AddCookie(cookie)
+	c.dumpRequest(req)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	c.dumpResponse(resp)
-
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
+	}
+	return b, err
+
 }
 
 // Utility to POST requests
