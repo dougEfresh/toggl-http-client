@@ -42,28 +42,29 @@ type WorkspaceClient struct {
 	updateTransport   WorkspaceUpdater
 }
 
+// https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
 func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
 	return wc.getTransport.Get(wc, id, "")
 }
 
+// https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
 func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
 	return wc.updateTransport.Update(wc, ws)
 }
-
+// https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
 func (wc *WorkspaceClient) List() (Workspaces, error) {
 	return wc.listTransport.List(wc)
 }
 
-func (ws *WorkspaceClient) String() string {
-	return fmt.Sprintf("workspace:{togglHttpClient: %s}", ws.tc)
-}
-
+// Ability to override the List method. Not yet implemented
 type WorkspaceLister interface {
 	List(wsc *WorkspaceClient) (Workspaces, error)
 }
+// Ability to override the Get method. Not yet implemented
 type WorkspaceGetter interface {
 	Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error)
 }
+// Ability to override the Update method. Not yet implemented
 type WorkspaceUpdater interface {
 	Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error)
 }
@@ -112,18 +113,6 @@ type workspaceTransport struct {
 }
 
 var defaultTransport = &workspaceTransport{}
-
-func (ws *Workspace) String() string {
-	return fmt.Sprintf("{id:%s ,name:%s, premium: %b", ws.Id, ws.Name, ws.Premium)
-}
-
-func (ws Workspaces) String() string {
-	var st string = "["
-	for _, value := range ws {
-		st += fmt.Sprint(value) + ","
-	}
-	return st + "]"
-}
 
 type workspace_response struct {
 	Data Workspace `json:"data"`

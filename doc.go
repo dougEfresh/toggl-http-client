@@ -7,9 +7,9 @@ Example:
 	import "github/dougEfresh/gtoggl"
 
 	func main() {
-		thc, err := NewClient("token")
+		thc, err := gtoggl.NewClient("token")
 		...
-		wsc, err := NewWorkspaceClient(thc)
+		wsc, err := gtoggl.NewWorkspaceClient(thc)
 		...
 		workspaces,err := wsc.List()
 		if err == nil {
