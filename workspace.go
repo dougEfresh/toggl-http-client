@@ -60,7 +60,7 @@ type WorkspaceClient struct {
 }
 
 // ClientOptionFunc is a function that configures a Client.
-// It is used in NewClient.
+// It is used in NewWorkspaceClient.
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
 type WorkspaceTransport struct {
 }
@@ -83,13 +83,6 @@ func NewWorkspaceClient(tc *TogglClient, options ...WorkspaceClientOptionFunc) (
 	}
 	ws.workspaceEndpoint = DefaultUrl + "/workspaces"
 	return ws, nil
-}
-
-func SetTogglClient(tc *TogglClient) WorkspaceClientOptionFunc {
-	return func(ws *WorkspaceClient) error {
-		ws.tc = tc
-		return nil
-	}
 }
 
 func SetGetTransport(g WorkspaceGetter) WorkspaceClientOptionFunc {

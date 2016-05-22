@@ -32,7 +32,6 @@ func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	response.Header.Set("Content-Type", "application/json")
 	response.Header.Set("Set-Cookie", "toggl_api_session_new=MTM2MzA4MJa8jA3OHxEdi1CQkFFQ180SUFBUkFCRUFBQVlQLUNBQUVHYzNSeWFXNW5EQXdBQ25ObGMzTnBiMjVmYVdRR2MzUnlhVzVuREQ0QVBIUnZaMmRzTFdGd2FTMXpaWE56YVc5dUxUSXRaalU1WmpaalpEUTVOV1ZsTVRoaE1UaGhaalpqWkRkbU5XWTJNV0psWVRnd09EWmlPVEV3WkE9PXweAkG7kI6NBG-iqvhNn1MSDhkz2Pz_UYTzdBvZjCaA==; Path=/; Expires=Wed, 13 Mar 2013 09:54:38 UTC; Max-Age=86400; HttpOnly")
 	r := fmt.Sprintf("%s %s", req.Method, req.URL.Path)
-	fmt.Println("DEBUG -------------- " + r)
 	if strings.Contains(r,"/sessions") {
 		response.Body = ioutil.NopCloser(strings.NewReader(""))
 		return response, nil
