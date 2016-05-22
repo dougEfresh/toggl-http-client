@@ -13,6 +13,49 @@ func togglClient() *TogglClient {
 	return ws
 }
 
+func TestClientCreate(t *testing.T) {
+	tClient := togglClient()
+	c := &Client{Name: "Very Big Company",WId:777}
+	nc,err := tClient.Create(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if nc.Name != "Very Big Company" {
+		t.Fatal("!= Very Big Company")
+	}
+
+	if nc.Id != 1239455 {
+		t.Fatal("!= 1239455")
+	}
+
+	if nc.WId != 777 {
+		t.Fatal("!= 777")
+	}
+}
+
+func TestClientUpdate(t *testing.T) {
+	tClient := togglClient()
+	c := &Client{Id: 1, Name: "new name", WId:777}
+	nc,err := tClient.Update(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if nc.Name != "new name" {
+		t.Fatal("!= new name")
+	}
+}
+
+func TestClientDelete(t *testing.T) {
+	tClient := togglClient()
+	c := &Client{Id: 1, Name: "new name", WId:777}
+	err := tClient.Delete(c.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestClientList(t *testing.T) {
 	tClient := togglClient()
 	clients, err := tClient.List()
