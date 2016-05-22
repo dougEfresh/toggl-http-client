@@ -1,5 +1,6 @@
 // Gtoggl - A go client library for toggl
 package gtoggl
+
 /*
 import "github/dougEfresh/gtoggl"
 

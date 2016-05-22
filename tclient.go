@@ -26,8 +26,8 @@ type TogglClient struct {
 	traceLog      Logger       // trace log for debugging
 	password      string       // password for HTTP Basic Auth
 	maxRetries    uint
-	sessionCookie string       //24 hour session cookie
-	gzipEnabled   bool         // gzip compression enabled or disabled (default)
+	sessionCookie string //24 hour session cookie
+	gzipEnabled   bool   // gzip compression enabled or disabled (default)
 }
 
 // ClientOptionFunc is a function that configures a Client.
@@ -61,7 +61,7 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglClient, error) {
 	_, err := c.authenticate(key)
 
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	if c.url != DefaultUrl {
@@ -110,7 +110,7 @@ func (c *TogglClient) String() string {
 }
 
 func (c *TogglClient) authenticate(key string) ([]byte, error) {
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s",c.url,"sessions"), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", c.url, "sessions"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -129,10 +129,10 @@ func (c *TogglClient) authenticate(key string) ([]byte, error) {
 	}
 
 	defer resp.Body.Close()
-	if (resp.Body != nil ) {
+	if resp.Body != nil {
 		return ioutil.ReadAll(resp.Body)
 	}
-	return nil,nil
+	return nil, nil
 }
 
 func request(c *TogglClient, method, endpoint string, body []byte) ([]byte, error) {
