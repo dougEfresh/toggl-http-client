@@ -13,6 +13,29 @@ type Workspace struct {
 
 type Workspaces []Workspace
 
+//Return a Workspace Cilent. An error is also returned when some configuration option is invalid
+//    tc,err := gtoggl.NewClient("token")
+//    wsc,err := gtoggl.NewWorkspaceClient(tc)
+func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
+	ws := &WorkspaceClient{
+		tc:              tc,
+		listTransport:   defaultTransport,
+		getTransport:    defaultTransport,
+		updateTransport: defaultTransport,
+	}
+	// Run the options on it
+
+	for _, option := range options {
+		if err := option(ws); err != nil {
+			return nil, err
+		}
+	}
+	ws.workspaceEndpoint = tc.Url + "/workspaces"
+	return ws, nil
+}
+
+
+
 type WorkspaceClient struct {
 	tc                *TogglHttpClient
 	workspaceEndpoint string
@@ -34,25 +57,7 @@ func (wc *WorkspaceClient) List() (Workspaces, error) {
 }
 
 func (ws *WorkspaceClient) String() string {
-	return fmt.Sprintf("workspace:{togglClient: %s}", ws.tc)
-}
-
-func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
-	ws := &WorkspaceClient{
-		tc:              tc,
-		listTransport:   defaultTransport,
-		getTransport:    defaultTransport,
-		updateTransport: defaultTransport,
-	}
-	// Run the options on it
-
-	for _, option := range options {
-		if err := option(ws); err != nil {
-			return nil, err
-		}
-	}
-	ws.workspaceEndpoint = tc.Url + "/workspaces"
-	return ws, nil
+	return fmt.Sprintf("workspace:{togglHttpClient: %s}", ws.tc)
 }
 
 type WorkspaceLister interface {
