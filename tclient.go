@@ -16,7 +16,7 @@ const (
 	DefaultVersion      = "v8"
 )
 
-// Client is an Toggl REST client. Create one by calling NewClient.
+// Client is an Toggl REST client. Created by calling NewClient.
 type TogglHttpClient struct {
 	client        *http.Client // net/http Client to use for requests
 	version       string       // v8
@@ -44,7 +44,7 @@ func (e *TogglError) Error() string {
 // It is used in NewClient.
 type ClientOptionFunc func(*TogglHttpClient) error
 
-// An error is also returned when some configuration option is invalid
+// Return a new TogglHttpClient . An error is also returned when some configuration option is invalid
 //    tc,err := gtoggl.NewClient("token")
 func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error) {
 	// Set up the client
