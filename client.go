@@ -48,8 +48,6 @@ type TogglClient struct {
 	deleteTransport ClientDeleter
 }
 
-
-
 func (tc *TogglClient) List() (Clients, error) {
 	return tc.listTransport.List(tc)
 }
