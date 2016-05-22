@@ -6,15 +6,15 @@ https://github.com/toggl/toggl_api_docs
 Example:
 	import "github/dougEfresh/gtoggl"
 
-		func main() {
-			thc, err := NewClient("token")
-			...
-			wsc, err := NewWorkspaceClient("token")
+	func main() {
+		thc, err := NewClient("token")
 		...
-			workspaces,err := wsc.List()
-			if err == nil {
+		wsc, err := NewWorkspaceClient(thc)
+		...
+		workspaces,err := wsc.List()
+		if err == nil {
 			panic(err)
-			}
 		}
+	}
 */
 package gtoggl
