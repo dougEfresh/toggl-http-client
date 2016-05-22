@@ -97,6 +97,19 @@ type Workspace struct {
 	Name    string `json:"name"`
 	Premium bool   `json:"premium"`
 }
+type Workspaces []Workspace
+
+func (ws *Workspace) String() string {
+	return fmt.Sprintf("{id:%s ,name:%s, premium: %b",ws.Id,ws.Name,ws.Premium)
+}
+
+func (ws Workspaces) String() string {
+	var st string = "["
+	for _, value := range ws {
+		st += fmt.Sprint(value) + ","
+	}
+	return st + "]"
+}
 
 type workspace_response struct {
 	Data Workspace `json:"data"`
