@@ -18,16 +18,17 @@ const (
 
 // Client is an Elasticsearch client. Create one by calling NewClient.
 type TogglClient struct {
-	client      *http.Client // net/http Client to use for requests
-	version     string       // v8
-	url         string       // set of URLs passed initially to the client
-	errorLog    Logger       // error log for critical messages
-	infoLog     Logger       // information log for e.g. response times
-	traceLog    Logger       // trace log for debugging
-	token       string       // username for HTTP Basic Auth
-	password    string       // password for HTTP Basic Auth
-	maxRetries  uint
-	gzipEnabled bool // gzip compression enabled or disabled (default)
+	client        *http.Client // net/http Client to use for requests
+	version       string       // v8
+	url           string       // set of URLs passed initially to the client
+	errorLog      Logger       // error log for critical messages
+	infoLog       Logger       // information log for e.g. response times
+	traceLog      Logger       // trace log for debugging
+	token         string       // username for HTTP Basic Auth
+	password      string       // password for HTTP Basic Auth
+	maxRetries    uint
+	sessionCookie string       //24 hour session cookie
+	gzipEnabled   bool         // gzip compression enabled or disabled (default)
 }
 
 // ClientOptionFunc is a function that configures a Client.
@@ -57,6 +58,13 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglClient, error) {
 	if len(c.token) < 10 {
 		return nil, errors.New("Token required")
 	}
+
+	_, err := c.authenticate()
+
+	if err != nil {
+		return nil,err
+	}
+
 	if c.url != DefaultUrl {
 		workspaceUrl = c.url + "/workspaces"
 	}
@@ -137,18 +145,45 @@ func (c *TogglClient) String() string {
 	return fmt.Sprintf("{token=%s}", c.token)
 }
 
-func request(c *TogglClient, method, endpoint string, body []byte) ([]byte, error) {
-	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(body))
+func (c *TogglClient) authenticate() ([]byte, error) {
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s",c.url,"sessions"), nil)
 	if err != nil {
 		return nil, err
 	}
 	c.dumpRequest(req)
 	req.SetBasicAuth(c.token, "api_token")
 	resp, err := c.client.Do(req)
-	c.dumpResponse(resp)
 	if err != nil {
 		return nil, err
 	}
+	c.dumpResponse(resp)
+	cookies := resp.Cookies()
+	for _, value := range cookies {
+		if value.Name == "toggl_api_session_new" {
+			c.sessionCookie = value.Value
+		}
+	}
+
+	defer resp.Body.Close()
+	return ioutil.ReadAll(resp.Body)
+}
+
+func request(c *TogglClient, method, endpoint string, body []byte) ([]byte, error) {
+	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+	c.dumpRequest(req)
+	cookie := &http.Cookie{}
+	cookie.Name = "toggl_api_session_new"
+	cookie.Value = c.sessionCookie
+	req.AddCookie(cookie)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	c.dumpResponse(resp)
+
 	defer resp.Body.Close()
 	return ioutil.ReadAll(resp.Body)
 }
