@@ -107,7 +107,7 @@ type workspace_response struct {
 }
 
 type workspace_update_request struct {
-	workspace Workspace `json:"workspace"`
+	Workspace Workspace `json:"workspace"`
 }
 
 var workspaceUrl = DefaultUrl + "/workspaces"
