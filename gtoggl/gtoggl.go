@@ -55,17 +55,16 @@ func client(tc *gtoggl.TogglHttpClient, args []string) {
 		fmt.Printf("%+v\n", clients)
 	}
 
-	if (args[0] == "create" && len(args) > 1) {
-		err = json.Unmarshal([]byte(args[1]),&client)
+	if args[0] == "create" && len(args) > 1 {
+		err = json.Unmarshal([]byte(args[1]), &client)
 		handleError(err)
 		client, err = c.Create(&client)
 		handleError(err)
 		fmt.Printf("%+v\n", client)
 	}
 
-
-	if (args[0] == "update" && len(args) > 1) {
-		err = json.Unmarshal([]byte(args[1]),&client)
+	if args[0] == "update" && len(args) > 1 {
+		err = json.Unmarshal([]byte(args[1]), &client)
 		handleError(err)
 		_, err = c.Get(client.Id)
 		handleError(err)
@@ -74,16 +73,15 @@ func client(tc *gtoggl.TogglHttpClient, args []string) {
 		fmt.Printf("%+v\n", client)
 	}
 
-
-	if (args[0] == "get" && len(args) > 1) {
+	if args[0] == "get" && len(args) > 1 {
 		i, err := strconv.ParseUint(args[1], 0, 64)
 		handleError(err)
-		client,err = c.Get(i)
+		client, err = c.Get(i)
 		handleError(err)
 		fmt.Printf("%+v\n", client)
 	}
 
-	if (args[0] == "delete" && len(args) > 1) {
+	if args[0] == "delete" && len(args) > 1 {
 		i, err := strconv.ParseUint(args[1], 0, 64)
 		handleError(err)
 		err = c.Delete(i)
@@ -112,7 +110,7 @@ func workspace(tc *gtoggl.TogglHttpClient, args []string) {
 	}
 
 	if args[0] == "update" && len(args) > 1 {
-		var uWs  gtoggl.Workspace
+		var uWs gtoggl.Workspace
 		handleError(err)
 		err = json.Unmarshal([]byte(args[1]), &uWs)
 		handleError(err)

@@ -18,12 +18,12 @@ func TestClientDefaults(t *testing.T) {
 	}
 
 	httpClient := &http.Client{Transport: newMockTransport(mockMe())}
-	client, err = NewClient("abc1234567890def", SetURL("https://blah"), SetErrorLogger(testLogger),SetTraceLogger(testLogger),SetInfoLogger(testLogger), SetHttpClient(httpClient))
+	client, err = NewClient("abc1234567890def", SetURL("https://blah"), SetErrorLogger(testLogger), SetTraceLogger(testLogger), SetInfoLogger(testLogger), SetHttpClient(httpClient))
 	if err != nil {
 		panic(err)
 	}
 	if client.Url != "https://blah" {
-		t.Error("Url not blah; "+ client.Url)
+		t.Error("Url not blah; " + client.Url)
 	}
 	if client.traceLog != testLogger || client.errorLog != testLogger || client.infoLog != testLogger {
 		t.Error("Loggers not set ")

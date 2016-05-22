@@ -5,8 +5,58 @@ import (
 	"fmt"
 )
 
+type Workspace struct {
+	Id      uint64 `json:"id"`
+	Name    string `json:"name"`
+	Premium bool   `json:"premium"`
+}
+
+type Workspaces []Workspace
+
+type WorkspaceClient struct {
+	tc                *TogglHttpClient
+	workspaceEndpoint string
+	listTransport     WorkspaceLister
+	getTransport      WorkspaceGetter
+	updateTransport   WorkspaceUpdater
+}
+
+func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
+	return wc.getTransport.Get(wc, id, "")
+}
+
+func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
+	return wc.updateTransport.Update(wc, ws)
+}
+
+func (wc *WorkspaceClient) List() (Workspaces, error) {
+	return wc.listTransport.List(wc)
+}
+
+func (ws *WorkspaceClient) String() string {
+	return fmt.Sprintf("workspace:{togglClient: %s}", ws.tc)
+}
+
+func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
+	ws := &WorkspaceClient{
+		tc:              tc,
+		listTransport:   defaultTransport,
+		getTransport:    defaultTransport,
+		updateTransport: defaultTransport,
+	}
+	// Run the options on it
+
+	for _, option := range options {
+		if err := option(ws); err != nil {
+			return nil, err
+		}
+	}
+	ws.workspaceEndpoint = tc.Url + "/workspaces"
+	return ws, nil
+}
+
 type WorkspaceLister interface {
-	List(wsc *WorkspaceClient) ([]Workspace, error)
+	List(wsc *WorkspaceClient) (Workspaces, error)
 }
 type WorkspaceGetter interface {
 	Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error)
@@ -16,7 +66,7 @@ type WorkspaceUpdater interface {
 }
 
 func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error) {
-	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d",wsc.workspaceEndpoint, id))
+	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d", wsc.workspaceEndpoint, id))
 	if err != nil {
 		return Workspace{}, err
 	}
@@ -26,7 +76,7 @@ func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string)
 	return aux.Data, err
 }
 
-func (wl *workspaceTransport) List(wsc *WorkspaceClient) ([]Workspace, error) {
+func (wl *workspaceTransport) List(wsc *WorkspaceClient) (Workspaces, error) {
 	body, err := wsc.tc.GetRequest(wsc.workspaceEndpoint)
 	var workspaces []Workspace
 	if err != nil {
@@ -51,56 +101,17 @@ func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Worksp
 	return aux.Data, err
 }
 
-type WorkspaceClient struct {
-	tc              *TogglHttpClient
-	workspaceEndpoint string
-	listTransport   WorkspaceLister
-	getTransport    WorkspaceGetter
-	updateTransport WorkspaceUpdater
-}
-
 // ClientOptionFunc is a function that configures a Client.
 // It is used in NewWorkspaceClient.
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
+
 type workspaceTransport struct {
 }
 
 var defaultTransport = &workspaceTransport{}
 
-func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
-	ws := &WorkspaceClient{
-		tc:              tc,
-		listTransport:   defaultTransport,
-		getTransport:    defaultTransport,
-		updateTransport: defaultTransport,
-	}
-	// Run the options on it
-
-	for _, option := range options {
-		if err := option(ws); err != nil {
-			return nil, err
-		}
-	}
-	ws.workspaceEndpoint = tc.Url + "/workspaces"
-	return ws, nil
-}
-
-func SetGetTransport(g WorkspaceGetter) WorkspaceClientOptionFunc {
-	return func(ws *WorkspaceClient) error {
-		ws.getTransport = g
-		return nil
-	}
-}
-
-type Workspace struct {
-	Id      uint64 `json:"id"`
-	Name    string `json:"name"`
-	Premium bool   `json:"premium"`
-}
-type Workspaces []Workspace
-
 func (ws *Workspace) String() string {
-	return fmt.Sprintf("{id:%s ,name:%s, premium: %b",ws.Id,ws.Name,ws.Premium)
+	return fmt.Sprintf("{id:%s ,name:%s, premium: %b", ws.Id, ws.Name, ws.Premium)
 }
 
 func (ws Workspaces) String() string {
@@ -117,20 +128,4 @@ type workspace_response struct {
 
 type workspace_update_request struct {
 	Workspace Workspace `json:"workspace"`
-}
-
-func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
-	return wc.getTransport.Get(wc, id, "")
-}
-
-func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
-	return wc.updateTransport.Update(wc, ws)
-}
-
-func (wc *WorkspaceClient) List() ([]Workspace, error) {
-	return wc.listTransport.List(wc)
-}
-
-func (ws *WorkspaceClient) String() string {
-	return fmt.Sprintf("workspace:{togglClient: %s}", ws.tc)
 }

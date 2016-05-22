@@ -15,8 +15,8 @@ func togglClient() *TogglClient {
 
 func TestClientCreate(t *testing.T) {
 	tClient := togglClient()
-	c := &Client{Name: "Very Big Company",WId:777}
-	nc,err := tClient.Create(c)
+	c := &Client{Name: "Very Big Company", WId: 777}
+	nc, err := tClient.Create(c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,8 +36,8 @@ func TestClientCreate(t *testing.T) {
 
 func TestClientUpdate(t *testing.T) {
 	tClient := togglClient()
-	c := &Client{Id: 1, Name: "new name", WId:777}
-	nc,err := tClient.Update(c)
+	c := &Client{Id: 1, Name: "new name", WId: 777}
+	nc, err := tClient.Update(c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestClientUpdate(t *testing.T) {
 
 func TestClientDelete(t *testing.T) {
 	tClient := togglClient()
-	c := &Client{Id: 1, Name: "new name", WId:777}
+	c := &Client{Id: 1, Name: "new name", WId: 777}
 	err := tClient.Delete(c.Id)
 	if err != nil {
 		t.Fatal(err)
