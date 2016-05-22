@@ -16,7 +16,7 @@ const (
 	DefaultVersion      = "v8"
 )
 
-// Client is an Elasticsearch client. Create one by calling NewClient.
+// Client is an Toggl REST client. Create one by calling NewClient.
 type TogglClient struct {
 	client        *http.Client // net/http Client to use for requests
 	version       string       // v8
@@ -24,7 +24,6 @@ type TogglClient struct {
 	errorLog      Logger       // error log for critical messages
 	infoLog       Logger       // information log for e.g. response times
 	traceLog      Logger       // trace log for debugging
-	token         string       // username for HTTP Basic Auth
 	password      string       // password for HTTP Basic Auth
 	maxRetries    uint
 	sessionCookie string       //24 hour session cookie
@@ -36,6 +35,7 @@ type TogglClient struct {
 type ClientOptionFunc func(*TogglClient) error
 
 // An error is also returned when some configuration option is invalid
+//    tc,err := gtoggl.NewClient("token")
 func NewClient(key string, options ...ClientOptionFunc) (*TogglClient, error) {
 	// Set up the client
 	c := &TogglClient{
@@ -45,7 +45,6 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglClient, error) {
 		version:     DefaultVersion,
 		gzipEnabled: DefaultGzipEnabled,
 		password:    DefaultAuthPassword,
-		token:       key,
 	}
 
 	// Run the options on it
@@ -55,11 +54,11 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglClient, error) {
 		}
 	}
 
-	if len(c.token) < 10 {
+	if len(key) < 1 {
 		return nil, errors.New("Token required")
 	}
 
-	_, err := c.authenticate()
+	_, err := c.authenticate(key)
 
 	if err != nil {
 		return nil,err
@@ -106,52 +105,17 @@ func SetTraceLogger(l Logger) ClientOptionFunc {
 	}
 }
 
-// SetURL defines the URL endpoints of the Elasticsearch nodes. Notice that
-// when sniffing is enabled, these URLs are used to initially sniff the
-// cluster on startup.
-func SetToken(token string) ClientOptionFunc {
-	return func(c *TogglClient) error {
-		switch len(token) {
-		case 0:
-			return errors.New("Token required")
-		default:
-			c.token = token
-		}
-		return nil
-	}
-}
-
-// SetMaxRetries sets the maximum number of retries before giving up when
-// performing a HTTP request to Elasticsearch.
-func SetMaxRetries(maxRetries uint) ClientOptionFunc {
-	return func(c *TogglClient) error {
-		if maxRetries < 0 {
-			return errors.New("MaxRetries must be greater than or equal to 0")
-		}
-		c.maxRetries = maxRetries
-		return nil
-	}
-}
-
-// SetGzip enables or disables gzip compression (disabled by default).
-func SetGzip(enabled bool) ClientOptionFunc {
-	return func(c *TogglClient) error {
-		c.gzipEnabled = enabled
-		return nil
-	}
-}
-
 func (c *TogglClient) String() string {
-	return fmt.Sprintf("{token=%s}", c.token)
+	return fmt.Sprintf("{sessionCookie=%s}", c.sessionCookie)
 }
 
-func (c *TogglClient) authenticate() ([]byte, error) {
+func (c *TogglClient) authenticate(key string) ([]byte, error) {
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s",c.url,"sessions"), nil)
 	if err != nil {
 		return nil, err
 	}
 	c.dumpRequest(req)
-	req.SetBasicAuth(c.token, "api_token")
+	req.SetBasicAuth(key, "api_token")
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -165,7 +129,10 @@ func (c *TogglClient) authenticate() ([]byte, error) {
 	}
 
 	defer resp.Body.Close()
-	return ioutil.ReadAll(resp.Body)
+	if (resp.Body != nil ) {
+		return ioutil.ReadAll(resp.Body)
+	}
+	return nil,nil
 }
 
 func request(c *TogglClient, method, endpoint string, body []byte) ([]byte, error) {
