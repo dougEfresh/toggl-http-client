@@ -1,12 +1,12 @@
 package gtoggl
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
-	"errors"
 )
 
 type TestLogger struct {
@@ -44,14 +44,14 @@ func GetResponse(req *http.Request) string {
 	}
 
 	if r == "GET /api/v8/workspaces/1" {
-		b,err := ioutil.ReadFile("mock/workspace.json")
+		b, err := ioutil.ReadFile("mock/workspace.json")
 		if err != nil {
 			panic(err)
 		}
 		return string(b)
 	}
 	if r == "PUT /api/v8/workspaces/1" {
-		b,err := ioutil.ReadFile("mock/workspace_update.json")
+		b, err := ioutil.ReadFile("mock/workspace_update.json")
 		if err != nil {
 			panic(err)
 		}
@@ -63,15 +63,15 @@ func GetResponse(req *http.Request) string {
 
 func workspaceClient() *WorkspaceClient {
 	httpClient := &http.Client{Transport: newMockTransport()}
-	client, err  := NewClient("abc1234567890def", SetTraceLogger(l), SetHttpClient(httpClient))
-	if (err != nil){
-		panic(err)
-	}
-	ws,err := NewWorkspaceClient(SetTogglClient(client))
+	client, err := NewClient("abc1234567890def", SetTraceLogger(l), SetHttpClient(httpClient))
 	if err != nil {
 		panic(err)
 	}
-	return ws;
+	ws, err := NewWorkspaceClient(SetTogglClient(client))
+	if err != nil {
+		panic(err)
+	}
+	return ws
 }
 
 func TestWorkspaceList(t *testing.T) {
@@ -104,7 +104,6 @@ func TestWorkspaceList(t *testing.T) {
 	}
 
 }
-
 
 func TestWorkspaceGet(t *testing.T) {
 	workspaceClient := workspaceClient()

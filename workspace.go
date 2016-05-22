@@ -63,6 +63,7 @@ type WorkspaceClient struct {
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
 type WorkspaceTransport struct {
 }
+
 var defaultTransport = &WorkspaceTransport{}
 
 func NewWorkspaceClient(options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
@@ -112,7 +113,7 @@ type workspace_update_request struct {
 var workspaceUrl = DefaultUrl + "/workspaces"
 
 func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
-	return wc.getTransport.Get(wc.c,id, "")
+	return wc.getTransport.Get(wc.c, id, "")
 }
 
 func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
