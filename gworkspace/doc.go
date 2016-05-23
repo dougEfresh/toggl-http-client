@@ -1,15 +1,16 @@
-// Gtoggl - A go client library for toggl
+/// Copyright 2016 Douglas Chimento.  All rights reserved.
+
 /*
-Package provides access to toggl REST API
-https://github.com/toggl/toggl_api_docs
+Package gworkspace provides access to toggl REST API
 
 Example:
 	import "github/dougEfresh/gtoggl"
+	import "github/dougEfresh/gtoggl/gworkspace"
 
 	func main() {
 		thc, err := gtoggl.NewClient("token")
 		...
-		wsc, err := gtoggl.NewWorkspaceClient(thc)
+		wsc, err := gworkspace.NewClient(thc)
 		...
 		workspaces,err := wsc.List()
 		if err == nil {

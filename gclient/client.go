@@ -18,8 +18,8 @@ type Clients []Client
 
 //Return a Toggl Client. An error is also returned when some configuration option is invalid
 //    thc,err := gtoggl.NewClient("token")
-//    tc,err := gtoggl.NewTogglClient(tc)
-func NewTogglClient(thc *gtoggl.TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
+//    tc,err := gclient.NewClient(tc)
+func NewClient(thc *gtoggl.TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
 	tc := &TogglClient{
 		thc:             thc,
 		listTransport:   defaultClientTransport,
@@ -85,8 +85,14 @@ type ClientDeleter interface {
 	Delete(tc *TogglClient, id uint64) error
 }
 
-// ClientOptionFunc is a function that configures a Client.
-// It is used in NewTogglClient.
+//Configures a Client.
+/*
+    func SetURL(url string) ToggleClientOptionFunc {
+	return func(c *TogglClient) error {
+	    c.Url = url
+	}
+    }
+ */
 type ToggleClientOptionFunc func(*TogglClient) error
 type clientTransport struct{}
 
@@ -102,6 +108,7 @@ type clientCreateRequest struct {
 	Client Client `json:"client"`
 }
 
+//GET https://www.toggl.com/api/v8/clients/1239455
 func (cl *clientTransport) Get(tc *TogglClient, id uint64) (Client, error) {
 	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id))
 	if err != nil {
@@ -113,11 +120,13 @@ func (cl *clientTransport) Get(tc *TogglClient, id uint64) (Client, error) {
 	return aux.Data, err
 }
 
+//DELETE https://www.toggl.com/api/v8/clients/1239455
 func (cl *clientTransport) Delete(tc *TogglClient, id uint64) error {
 	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id), nil)
 	return err
 }
 
+//GET https://www.toggl.com/api/v8/clients/1239455
 func (cl *clientTransport) List(tc *TogglClient) (Clients, error) {
 	body, err := tc.thc.GetRequest(tc.clientEndpoint)
 	var Clients []Client
@@ -128,6 +137,7 @@ func (cl *clientTransport) List(tc *TogglClient) (Clients, error) {
 	return Clients, err
 }
 
+//PUT https://www.toggl.com/api/v8/clients/1239455
 func (cl *clientTransport) Update(tc *TogglClient, c *Client) (Client, error) {
 	put := clientCreateRequest{Client: *c}
 	body, err := json.Marshal(put)
@@ -143,6 +153,7 @@ func (cl *clientTransport) Update(tc *TogglClient, c *Client) (Client, error) {
 	return aux.Data, err
 }
 
+//POST https://www.toggl.com/api/v8/clients
 func (cl *clientTransport) Create(tc *TogglClient, c *Client) (Client, error) {
 	put := clientCreateRequest{Client: *c}
 	body, err := json.Marshal(put)
