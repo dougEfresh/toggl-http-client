@@ -48,8 +48,13 @@ func handleError(error error) {
 }
 
 func client(tc *gtoggl.TogglHttpClient, args []string) {
+<<<<<<< HEAD
 	c, err := gclient.NewClient(tc)
 	var client gclient.Client
+=======
+	c, err := gtoggl.NewTogglClient(tc)
+	var client gtoggl.Client
+>>>>>>> 19cdf27c36611089fd53d2e6a4ce82c1bcc3f613
 	handleError(err)
 	if len(args) == 0 || args[0] == "list" {
 		clients, err := c.List()
@@ -94,7 +99,11 @@ func client(tc *gtoggl.TogglHttpClient, args []string) {
 }
 
 func workspace(tc *gtoggl.TogglHttpClient, args []string) {
+<<<<<<< HEAD
 	wsc, err := gworkspace.NewClient(tc)
+=======
+	wsc, err := gworkspace.NewWorkspaceClient(tc)
+>>>>>>> 19cdf27c36611089fd53d2e6a4ce82c1bcc3f613
 	handleError(err)
 	if len(args) == 0 || args[0] == "list" {
 		w, err := wsc.List()
