@@ -7,4 +7,5 @@ os:
   - linux
   - osx
 script:
-  - ./test.sh
+  - ./go.sh build -race
+  - ./go.sh test -v 
