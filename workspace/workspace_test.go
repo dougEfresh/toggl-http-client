@@ -1,4 +1,4 @@
-package gtoggl
+package gworkspace
 
 import (
 	"testing"
