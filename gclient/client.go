@@ -16,6 +16,8 @@ type Client struct {
 
 type Clients []Client
 
+const Endpoint  = "/clients"
+
 //Return a Toggl Client. An error is also returned when some configuration option is invalid
 //    thc,err := gtoggl.NewClient("token")
 //    tc,err := gclient.NewClient(tc)
@@ -35,13 +37,13 @@ func NewClient(thc *gtoggl.TogglHttpClient, options ...ToggleClientOptionFunc) (
 			return nil, err
 		}
 	}
-	tc.clientEndpoint = thc.Url + "/clients"
+	tc.endpoint = thc.Url + Endpoint
 	return tc, nil
 }
 
 type TogglClient struct {
 	thc             *gtoggl.TogglHttpClient
-	clientEndpoint  string
+	endpoint        string
 	listTransport   ClientLister
 	getTransport    ClientGetter
 	updateTransport ClientUpdater
@@ -92,7 +94,7 @@ type ClientDeleter interface {
 	    c.Url = url
 	}
     }
- */
+*/
 type ToggleClientOptionFunc func(*TogglClient) error
 type clientTransport struct{}
 
@@ -110,7 +112,7 @@ type clientCreateRequest struct {
 
 //GET https://www.toggl.com/api/v8/clients/1239455
 func (cl *clientTransport) Get(tc *TogglClient, id uint64) (Client, error) {
-	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id))
+	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id))
 	if err != nil {
 		return Client{}, err
 	}
@@ -122,13 +124,13 @@ func (cl *clientTransport) Get(tc *TogglClient, id uint64) (Client, error) {
 
 //DELETE https://www.toggl.com/api/v8/clients/1239455
 func (cl *clientTransport) Delete(tc *TogglClient, id uint64) error {
-	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id), nil)
+	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.endpoint, id), nil)
 	return err
 }
 
 //GET https://www.toggl.com/api/v8/clients/1239455
 func (cl *clientTransport) List(tc *TogglClient) (Clients, error) {
-	body, err := tc.thc.GetRequest(tc.clientEndpoint)
+	body, err := tc.thc.GetRequest(tc.endpoint)
 	var Clients []Client
 	if err != nil {
 		return Clients, err
@@ -144,7 +146,7 @@ func (cl *clientTransport) Update(tc *TogglClient, c *Client) (Client, error) {
 	if err != nil {
 		return Client{}, err
 	}
-	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, c.Id), body)
+	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, c.Id), body)
 	if err != nil {
 		return Client{}, err
 	}
@@ -160,7 +162,7 @@ func (cl *clientTransport) Create(tc *TogglClient, c *Client) (Client, error) {
 	if err != nil {
 		return Client{}, err
 	}
-	response, err := tc.thc.PostRequest(tc.clientEndpoint, body)
+	response, err := tc.thc.PostRequest(tc.endpoint, body)
 	if err != nil {
 		return Client{}, err
 	}

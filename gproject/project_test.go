@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func togglClient() *TogglClient {
+func togglClient() *ProjectClient {
 	client := mockClient()
 	ws, err := NewClient(client)
 	if err != nil {
@@ -13,20 +13,20 @@ func togglClient() *TogglClient {
 	return ws
 }
 
-func TestClientCreate(t *testing.T) {
+func TestProjectCreate(t *testing.T) {
 	tClient := togglClient()
-	c := &Client{Name: "Very Big Company", WId: 777}
+	c := &Project{Name: "Very Big Company", WId: 777}
 	nc, err := tClient.Create(c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if nc.Name != "Very Big Company" {
-		t.Fatal("!= Very Big Company")
+	if nc.Name != "An awesome project" {
+		t.Fatal("!= An awesome project")
 	}
 
-	if nc.Id != 1239455 {
-		t.Fatal("!= 1239455")
+	if nc.Id != 3 {
+		t.Fatal("!= 3")
 	}
 
 	if nc.WId != 777 {
@@ -34,9 +34,9 @@ func TestClientCreate(t *testing.T) {
 	}
 }
 
-func TestClientUpdate(t *testing.T) {
+func TestProjectUpdate(t *testing.T) {
 	tClient := togglClient()
-	c := &Client{Id: 1, Name: "new name", WId: 777}
+	c := &Project{Id: 1, Name: "new name", WId: 777}
 	nc, err := tClient.Update(c)
 	if err != nil {
 		t.Fatal(err)
@@ -47,16 +47,16 @@ func TestClientUpdate(t *testing.T) {
 	}
 }
 
-func TestClientDelete(t *testing.T) {
+func TestProjectDelete(t *testing.T) {
 	tClient := togglClient()
-	c := &Client{Id: 1, Name: "new name", WId: 777}
+	c := &Project{Id: 1, Name: "new name", WId: 777}
 	err := tClient.Delete(c.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestClientList(t *testing.T) {
+func TestProjectList(t *testing.T) {
 	tClient := togglClient()
 	clients, err := tClient.List()
 	if err != nil {
@@ -80,7 +80,7 @@ func TestClientList(t *testing.T) {
 	}
 }
 
-func TestClientGet(t *testing.T) {
+func TestProjectGet(t *testing.T) {
 	tClient := togglClient()
 
 	client, err := tClient.Get(1)
@@ -99,7 +99,7 @@ func TestClientGet(t *testing.T) {
 func BenchmarkClientTransport_Get(b *testing.B) {
 	b.ReportAllocs()
 	tClient := togglClient()
-	 for i := 0; i < b.N; i++ {
-		 tClient.Get(1)
-	 }
+	for i := 0; i < b.N; i++ {
+		tClient.Get(1)
+	}
 }

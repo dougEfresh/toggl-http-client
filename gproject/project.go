@@ -6,42 +6,43 @@ import (
 	"github.com/dougEfresh/gtoggl"
 )
 
-// Toggl Client Definition
-type Client struct {
-	Id       uint64 `json:"id"`
-	WId      uint64 `json:"wid"`
-	Name     string `json:"name"`
-	Currency string `json:"currency"`
+// Toggl Project Definition
+type Project struct {
+	Id   uint64 `json:"id"`
+	WId  uint64 `json:"wid"`
+	CId  uint64 `json:"cid"`
+	Name string `json:"name"`
 }
 
-type Clients []Client
+type Projects []Project
 
-//Return a Toggl Client. An error is also returned when some configuration option is invalid
+const Endpoint = "/projects"
+
+//Return a ProjectClient. An error is also returned when some configuration option is invalid
 //    thc,err := gtoggl.NewClient("token")
-//    tc,err := gclient.NewClient(tc)
-func NewClient(thc *gtoggl.TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
-	tc := &TogglClient{
+//    pc,err := gproject.NewClient(tc)
+func NewClient(thc *gtoggl.TogglHttpClient, options ...ProjectClientOptionFunc) (*ProjectClient, error) {
+	tc := &ProjectClient{
 		thc:             thc,
-		listTransport:   defaultClientTransport,
-		getTransport:    defaultClientTransport,
-		updateTransport: defaultClientTransport,
-		createTransport: defaultClientTransport,
-		deleteTransport: defaultClientTransport,
+		listTransport:   defaultTransport,
+		getTransport:    defaultTransport,
+		updateTransport: defaultTransport,
+		createTransport: defaultTransport,
+		deleteTransport: defaultTransport,
 	}
 	// Run the options on it
-
 	for _, option := range options {
 		if err := option(tc); err != nil {
 			return nil, err
 		}
 	}
-	tc.clientEndpoint = thc.Url + "/clients"
+	tc.endpoint = thc.Url + Endpoint
 	return tc, nil
 }
 
-type TogglClient struct {
+type ProjectClient struct {
 	thc             *gtoggl.TogglHttpClient
-	clientEndpoint  string
+	endpoint        string
 	listTransport   ClientLister
 	getTransport    ClientGetter
 	updateTransport ClientUpdater
@@ -49,40 +50,40 @@ type TogglClient struct {
 	deleteTransport ClientDeleter
 }
 
-func (tc *TogglClient) List() (Clients, error) {
+func (tc *ProjectClient) List() (Projects, error) {
 	return tc.listTransport.List(tc)
 }
 
-func (tc *TogglClient) Get(id uint64) (Client, error) {
+func (tc *ProjectClient) Get(id uint64) (Project, error) {
 	return tc.getTransport.Get(tc, id)
 }
 
-func (tc *TogglClient) Create(c *Client) (Client, error) {
+func (tc *ProjectClient) Create(c *Project) (Project, error) {
 	return tc.createTransport.Create(tc, c)
 }
 
-func (tc *TogglClient) Update(c *Client) (Client, error) {
+func (tc *ProjectClient) Update(c *Project) (Project, error) {
 	return tc.updateTransport.Update(tc, c)
 }
 
-func (tc *TogglClient) Delete(id uint64) error {
+func (tc *ProjectClient) Delete(id uint64) error {
 	return tc.deleteTransport.Delete(tc, id)
 }
 
 type ClientLister interface {
-	List(tc *TogglClient) (Clients, error)
+	List(tc *ProjectClient) (Projects, error)
 }
 type ClientGetter interface {
-	Get(tc *TogglClient, id uint64) (Client, error)
+	Get(tc *ProjectClient, id uint64) (Project, error)
 }
 type ClientUpdater interface {
-	Update(tc *TogglClient, c *Client) (Client, error)
+	Update(tc *ProjectClient, c *Project) (Project, error)
 }
 type ClientCreater interface {
-	Create(tc *TogglClient, c *Client) (Client, error)
+	Create(tc *ProjectClient, c *Project) (Project, error)
 }
 type ClientDeleter interface {
-	Delete(tc *TogglClient, id uint64) error
+	Delete(tc *ProjectClient, id uint64) error
 }
 
 //Configures a Client.
@@ -92,44 +93,44 @@ type ClientDeleter interface {
 	    c.Url = url
 	}
     }
- */
-type ToggleClientOptionFunc func(*TogglClient) error
-type clientTransport struct{}
+*/
+type ProjectClientOptionFunc func(*ProjectClient) error
+type projectTransport struct{}
 
-var defaultClientTransport = &clientTransport{}
+var defaultTransport = &projectTransport{}
 
-type clientResponse struct {
-	Data Client `json:"data"`
+type projectResponse struct {
+	Data Project `json:"data"`
 }
-type clientRequest struct {
-	Data Client `json:"data"`
+type projectRequest struct {
+	Data Project `json:"data"`
 }
-type clientCreateRequest struct {
-	Client Client `json:"client"`
+type projectUpdateRequest struct {
+	Project Project `json:"project"`
 }
 
-//GET https://www.toggl.com/api/v8/clients/1239455
-func (cl *clientTransport) Get(tc *TogglClient, id uint64) (Client, error) {
-	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id))
+//GET https://www.toggl.com/api/v8/projects/1239455
+func (cl *projectTransport) Get(tc *ProjectClient, id uint64) (Project, error) {
+	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id))
 	if err != nil {
-		return Client{}, err
+		return Project{}, err
 	}
 
-	var aux clientResponse
+	var aux projectResponse
 	err = json.Unmarshal(body, &aux)
 	return aux.Data, err
 }
 
-//DELETE https://www.toggl.com/api/v8/clients/1239455
-func (cl *clientTransport) Delete(tc *TogglClient, id uint64) error {
-	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, id), nil)
+//DELETE https://www.toggl.com/api/v8/projects/1239455
+func (cl *projectTransport) Delete(tc *ProjectClient, id uint64) error {
+	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.endpoint, id), nil)
 	return err
 }
 
-//GET https://www.toggl.com/api/v8/clients/1239455
-func (cl *clientTransport) List(tc *TogglClient) (Clients, error) {
-	body, err := tc.thc.GetRequest(tc.clientEndpoint)
-	var Clients []Client
+//GET https://www.toggl.com/api/v8/projects/1239455
+func (cl *projectTransport) List(tc *ProjectClient) (Projects, error) {
+	body, err := tc.thc.GetRequest(tc.endpoint)
+	var Clients []Project
 	if err != nil {
 		return Clients, err
 	}
@@ -137,34 +138,34 @@ func (cl *clientTransport) List(tc *TogglClient) (Clients, error) {
 	return Clients, err
 }
 
-//PUT https://www.toggl.com/api/v8/clients/1239455
-func (cl *clientTransport) Update(tc *TogglClient, c *Client) (Client, error) {
-	put := clientCreateRequest{Client: *c}
+//PUT https://www.toggl.com/api/v8/projects/1239455
+func (cl *projectTransport) Update(tc *ProjectClient, c *Project) (Project, error) {
+	put := projectUpdateRequest{Project: *c}
 	body, err := json.Marshal(put)
 	if err != nil {
-		return Client{}, err
+		return Project{}, err
 	}
-	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.clientEndpoint, c.Id), body)
+	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, c.Id), body)
 	if err != nil {
-		return Client{}, err
+		return Project{}, err
 	}
-	var aux clientResponse
+	var aux projectResponse
 	err = json.Unmarshal(response, &aux)
 	return aux.Data, err
 }
 
-//POST https://www.toggl.com/api/v8/clients
-func (cl *clientTransport) Create(tc *TogglClient, c *Client) (Client, error) {
-	put := clientCreateRequest{Client: *c}
+//POST https://www.toggl.com/api/v8/projects
+func (cl *projectTransport) Create(tc *ProjectClient, c *Project) (Project, error) {
+	put := projectUpdateRequest{Project: *c}
 	body, err := json.Marshal(put)
 	if err != nil {
-		return Client{}, err
+		return Project{}, err
 	}
-	response, err := tc.thc.PostRequest(tc.clientEndpoint, body)
+	response, err := tc.thc.PostRequest(tc.endpoint, body)
 	if err != nil {
-		return Client{}, err
+		return Project{}, err
 	}
-	var aux clientResponse
+	var aux projectResponse
 	err = json.Unmarshal(response, &aux)
 	return aux.Data, err
 }
