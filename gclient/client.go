@@ -16,7 +16,7 @@ type Client struct {
 
 type Clients []Client
 
-const Endpoint  = "/clients"
+const Endpoint = "/clients"
 
 //Return a Toggl Client. An error is also returned when some configuration option is invalid
 //    thc,err := gtoggl.NewClient("token")
