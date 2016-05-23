@@ -1,7 +1,9 @@
 #!/bin/bash
 
-go install 
+go test  -v
 
 for i in * ; do
-[ -f $i/doc.go ]  && go test -v
+if [ -f $i/doc.go ]  ; then
+(cd $i && go test -v) || exit $?
+fi
 done

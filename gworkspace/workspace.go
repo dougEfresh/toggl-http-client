@@ -14,6 +14,8 @@ type Workspace struct {
 
 type Workspaces []Workspace
 
+const Endpoint = "/workspaces"
+
 //Return a Workspace Cilent. An error is also returned when some configuration option is invalid
 //    tc,err := gtoggl.NewClient("token")
 //    wsc,err := gtoggl.NewWorkspaceClient(tc)
@@ -31,16 +33,16 @@ func NewClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc)
 			return nil, err
 		}
 	}
-	ws.workspaceEndpoint = tc.Url + "/workspaces"
+	ws.endpoint = tc.Url + Endpoint
 	return ws, nil
 }
 
 type WorkspaceClient struct {
-	tc                *gtoggl.TogglHttpClient
-	workspaceEndpoint string
-	listTransport     WorkspaceLister
-	getTransport      WorkspaceGetter
-	updateTransport   WorkspaceUpdater
+	tc              *gtoggl.TogglHttpClient
+	endpoint        string
+	listTransport   WorkspaceLister
+	getTransport    WorkspaceGetter
+	updateTransport WorkspaceUpdater
 }
 
 //https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
@@ -75,7 +77,7 @@ type WorkspaceUpdater interface {
 
 //GET https://www.toggl.com/api/v8/workspaces/123213
 func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error) {
-	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d", wsc.workspaceEndpoint, id))
+	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d", wsc.endpoint, id))
 	if err != nil {
 		return Workspace{}, err
 	}
@@ -87,7 +89,7 @@ func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string)
 
 //GET https://www.toggl.com/api/v8/workspaces
 func (wl *workspaceTransport) List(wsc *WorkspaceClient) (Workspaces, error) {
-	body, err := wsc.tc.GetRequest(wsc.workspaceEndpoint)
+	body, err := wsc.tc.GetRequest(wsc.endpoint)
 	var workspaces []Workspace
 	if err != nil {
 		return workspaces, err
@@ -103,7 +105,7 @@ func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Worksp
 	if err != nil {
 		return Workspace{}, err
 	}
-	response, err := wsc.tc.PutRequest(fmt.Sprintf("%s/%d", wsc.workspaceEndpoint, ws.Id), body)
+	response, err := wsc.tc.PutRequest(fmt.Sprintf("%s/%d", wsc.endpoint, ws.Id), body)
 	if err != nil {
 		return Workspace{}, err
 	}
@@ -119,7 +121,7 @@ func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Worksp
 	    c.Url = url
 	}
     }
- */
+*/
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
 
 type workspaceTransport struct {

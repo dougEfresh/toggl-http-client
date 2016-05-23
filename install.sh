@@ -3,5 +3,5 @@
 go install 
 
 for i in * ; do
-[ -f $i/doc.go ]  && go install
+[ -f $i/doc.go ] && (cd $i && go install)
 done
