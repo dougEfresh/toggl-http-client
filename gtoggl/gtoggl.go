@@ -7,6 +7,7 @@ import (
 	"github.com/dougEfresh/gtoggl"
 	"os"
 	"strconv"
+	"github.com/dougEfresh/gtoggl/workspace"
 )
 
 type debugger struct {
@@ -92,7 +93,7 @@ func client(tc *gtoggl.TogglHttpClient, args []string) {
 }
 
 func workspace(tc *gtoggl.TogglHttpClient, args []string) {
-	wsc, err := gtoggl.NewWorkspaceClient(tc)
+	wsc, err := gworkspace.NewWorkspaceClient(tc)
 	handleError(err)
 	if len(args) == 0 || args[0] == "list" {
 		w, err := wsc.List()
@@ -110,7 +111,7 @@ func workspace(tc *gtoggl.TogglHttpClient, args []string) {
 	}
 
 	if args[0] == "update" && len(args) > 1 {
-		var uWs gtoggl.Workspace
+		var uWs gworkspace.Workspace
 		handleError(err)
 		err = json.Unmarshal([]byte(args[1]), &uWs)
 		handleError(err)

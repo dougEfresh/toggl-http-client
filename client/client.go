@@ -1,8 +1,9 @@
-package gtoggl
+package gclient
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dougEfresh/gtoggl"
 )
 
 // Toggl Client Definition
@@ -18,7 +19,7 @@ type Clients []Client
 //Return a Toggl Client. An error is also returned when some configuration option is invalid
 //    thc,err := gtoggl.NewClient("token")
 //    tc,err := gtoggl.NewTogglClient(tc)
-func NewTogglClient(thc *TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
+func NewTogglClient(thc *gtoggl.TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
 	tc := &TogglClient{
 		thc:             thc,
 		listTransport:   defaultClientTransport,
@@ -39,7 +40,7 @@ func NewTogglClient(thc *TogglHttpClient, options ...ToggleClientOptionFunc) (*T
 }
 
 type TogglClient struct {
-	thc             *TogglHttpClient
+	thc             *gtoggl.TogglHttpClient
 	clientEndpoint  string
 	listTransport   ClientLister
 	getTransport    ClientGetter

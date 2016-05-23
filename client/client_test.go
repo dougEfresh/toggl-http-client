@@ -1,4 +1,4 @@
-package gtoggl
+package gclient
 
 import (
 	"testing"

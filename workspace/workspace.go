@@ -1,8 +1,9 @@
-package gtoggl
+package gworkspace
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dougEfresh/gtoggl"
 )
 
 type Workspace struct {
@@ -16,7 +17,7 @@ type Workspaces []Workspace
 //Return a Workspace Cilent. An error is also returned when some configuration option is invalid
 //    tc,err := gtoggl.NewClient("token")
 //    wsc,err := gtoggl.NewWorkspaceClient(tc)
-func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
+func NewWorkspaceClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
 	ws := &WorkspaceClient{
 		tc:              tc,
 		listTransport:   defaultTransport,
@@ -35,7 +36,7 @@ func NewWorkspaceClient(tc *TogglHttpClient, options ...WorkspaceClientOptionFun
 }
 
 type WorkspaceClient struct {
-	tc                *TogglHttpClient
+	tc                *gtoggl.TogglHttpClient
 	workspaceEndpoint string
 	listTransport     WorkspaceLister
 	getTransport      WorkspaceGetter
