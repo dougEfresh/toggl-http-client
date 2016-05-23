@@ -6,7 +6,7 @@ import (
 
 func togglClient() *TogglClient {
 	client := mockClient()
-	ws, err := NewTogglClient(client)
+	ws, err := NewClient(client)
 	if err != nil {
 		panic(err)
 	}
@@ -94,4 +94,12 @@ func TestClientGet(t *testing.T) {
 	if client.Name != "Id 1" {
 		t.Error("!= Id 1:  " + client.Name)
 	}
+}
+
+func BenchmarkClientTransport_Get(b *testing.B) {
+	b.ReportAllocs()
+	tClient := togglClient()
+	 for i := 0; i < b.N; i++ {
+		 tClient.Get(1)
+	 }
 }

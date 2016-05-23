@@ -7,7 +7,8 @@ import (
 	"github.com/dougEfresh/gtoggl"
 	"os"
 	"strconv"
-	"github.com/dougEfresh/gtoggl/workspace"
+	"github.com/dougEfresh/gtoggl/gworkspace"
+	"github.com/dougEfresh/gtoggl/gclient"
 )
 
 type debugger struct {
@@ -47,8 +48,8 @@ func handleError(error error) {
 }
 
 func client(tc *gtoggl.TogglHttpClient, args []string) {
-	c, err := gtoggl.NewTogglClient(tc)
-	var client gtoggl.Client
+	c, err := gclient.NewClient(tc)
+	var client gclient.Client
 	handleError(err)
 	if len(args) == 0 || args[0] == "list" {
 		clients, err := c.List()
@@ -93,7 +94,7 @@ func client(tc *gtoggl.TogglHttpClient, args []string) {
 }
 
 func workspace(tc *gtoggl.TogglHttpClient, args []string) {
-	wsc, err := gworkspace.NewWorkspaceClient(tc)
+	wsc, err := gworkspace.NewClient(tc)
 	handleError(err)
 	if len(args) == 0 || args[0] == "list" {
 		w, err := wsc.List()

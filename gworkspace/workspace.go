@@ -17,7 +17,7 @@ type Workspaces []Workspace
 //Return a Workspace Cilent. An error is also returned when some configuration option is invalid
 //    tc,err := gtoggl.NewClient("token")
 //    wsc,err := gtoggl.NewWorkspaceClient(tc)
-func NewWorkspaceClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
+func NewClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
 	ws := &WorkspaceClient{
 		tc:              tc,
 		listTransport:   defaultTransport,
@@ -43,36 +43,37 @@ type WorkspaceClient struct {
 	updateTransport   WorkspaceUpdater
 }
 
-// https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
+//https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
 func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
 	return wc.getTransport.Get(wc, id, "")
 }
 
-// https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
+//https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
 func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
 	return wc.updateTransport.Update(wc, ws)
 }
 
-// https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
+//https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
 func (wc *WorkspaceClient) List() (Workspaces, error) {
 	return wc.listTransport.List(wc)
 }
 
-// Ability to override the List method. Not yet implemented
+//Ability to override the List method. Not yet implemented
 type WorkspaceLister interface {
 	List(wsc *WorkspaceClient) (Workspaces, error)
 }
 
-// Ability to override the Get method. Not yet implemented
+//Ability to override the Get method. Not yet implemented
 type WorkspaceGetter interface {
 	Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error)
 }
 
-// Ability to override the Update method. Not yet implemented
+//Ability to override the Update method. Not yet implemented
 type WorkspaceUpdater interface {
 	Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error)
 }
 
+//GET https://www.toggl.com/api/v8/workspaces/123213
 func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error) {
 	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d", wsc.workspaceEndpoint, id))
 	if err != nil {
@@ -84,6 +85,7 @@ func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string)
 	return aux.Data, err
 }
 
+//GET https://www.toggl.com/api/v8/workspaces
 func (wl *workspaceTransport) List(wsc *WorkspaceClient) (Workspaces, error) {
 	body, err := wsc.tc.GetRequest(wsc.workspaceEndpoint)
 	var workspaces []Workspace
@@ -94,6 +96,7 @@ func (wl *workspaceTransport) List(wsc *WorkspaceClient) (Workspaces, error) {
 	return workspaces, err
 }
 
+//PUT https://www.toggl.com/api/v8/workspaces
 func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error) {
 	put := workspace_update_request{Workspace: ws}
 	body, err := json.Marshal(put)
@@ -109,8 +112,14 @@ func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Worksp
 	return aux.Data, err
 }
 
-// ClientOptionFunc is a function that configures a Client.
-// It is used in NewWorkspaceClient.
+//Configures a Client.
+/*
+    func SetURL(url string) WorkspaceClientOptionFunc {
+	return func(c *WorkspaceClient) error {
+	    c.Url = url
+	}
+    }
+ */
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
 
 type workspaceTransport struct {

@@ -6,7 +6,7 @@ import (
 
 func workspaceClient() *WorkspaceClient {
 	client := mockClient()
-	ws, err := NewWorkspaceClient(client)
+	ws, err := NewClient(client)
 	if err != nil {
 		panic(err)
 	}
