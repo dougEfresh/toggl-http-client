@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/dougEfresh/gtoggl"
 	"github.com/dougEfresh/gtoggl/gclient"
+	"github.com/dougEfresh/gtoggl/guser"
 	"github.com/dougEfresh/gtoggl/gworkspace"
 	"os"
 	"strconv"
@@ -37,6 +38,9 @@ func main() {
 	}
 	if *command == "client" {
 		client(tc, flag.Args())
+	}
+	if *command == "user" {
+		user(tc, flag.Args())
 	}
 }
 
@@ -123,4 +127,47 @@ func workspace(tc *gtoggl.TogglHttpClient, args []string) {
 		fmt.Printf("%+v\n", uWs)
 		return
 	}
+}
+
+func user(tc *gtoggl.TogglHttpClient, args []string) {
+	wsc, err := guser.NewClient(tc)
+	handleError(err)
+	if len(args) == 0 || args[0] == "get" {
+		w, err := wsc.Get(false)
+		handleError(err)
+		js, err := json.Marshal(w)
+		handleError(err)
+		fmt.Printf("%+s\n", js)
+		return
+	}
+
+	if args[0] == "reset" {
+		w, err := wsc.ResetToken()
+		handleError(err)
+		fmt.Printf("%+v\n", w)
+		return
+	}
+
+	if args[0] == "update" && len(args) > 1 {
+		var uWs guser.User
+		handleError(err)
+		err = json.Unmarshal([]byte(args[1]), &uWs)
+		handleError(err)
+		_, err := wsc.Get(true)
+		handleError(err)
+		uWs, err = wsc.Update(&uWs)
+		handleError(err)
+		fmt.Printf("%+v\n", uWs)
+		return
+	}
+	if args[0] == "create" && len(args) > 2 {
+		var uWs guser.User
+		uWs, err = wsc.Create(args[1], args[2], args[3])
+		handleError(err)
+		js, err := json.Marshal(uWs)
+		handleError(err)
+		fmt.Printf("%+s\n", js)
+		return
+	}
+
 }
