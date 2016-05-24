@@ -3,5 +3,7 @@
 go  "$@"
 
 for i in * ; do
-[ -f $i/doc.go ] && (cd $i && go "$@")
+if [ -f $i/doc.go ] ; then 
+ (cd $i && go "$@")
+fi
 done
