@@ -103,3 +103,11 @@ func BenchmarkClientTransport_Get(b *testing.B) {
 		tClient.Get(1)
 	}
 }
+
+func BenchmarkClientTransport_List(b *testing.B) {
+	b.ReportAllocs()
+	tClient := togglClient()
+	for i := 0; i < b.N; i++ {
+		tClient.List()
+	}
+}
