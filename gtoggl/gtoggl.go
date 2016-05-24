@@ -5,10 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/dougEfresh/gtoggl"
+	"github.com/dougEfresh/gtoggl/gclient"
+	"github.com/dougEfresh/gtoggl/gworkspace"
 	"os"
 	"strconv"
-	"github.com/dougEfresh/gtoggl/gworkspace"
-	"github.com/dougEfresh/gtoggl/gclient"
 )
 
 type debugger struct {
