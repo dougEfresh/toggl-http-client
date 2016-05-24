@@ -1,21 +1,11 @@
 // Copyright 2016 Douglas Chimento.  All rights reserved.
 
 /*
-Package gtoggl access to toggl REST API
+Command Line Interface to toggl
 
 Example:
-	import "github/dougEfresh/gtoggl"
-	import "github/dougEfresh/gtoggl/gclient"
-
-	func main() {
-		thc, err := gtoggl.NewClient("token")
-		thc, err = gtoggl.NewClient("token",gtoggl.SetURL("https://www.toggl.com/api/v8/")
-		...
-		...
-		clients,err := tc.List()
-		if err == nil {
-			panic(err)
-		}
-	}
+	go run gtoggl.go  -t $TOGGL_API -c user
+	go run gtoggl.go  -t $TOGGL_API -c user update '{"id":2269184, "email":"newEmail@gmail.com","fullname":"New Name"}'
+	go run gtoggl.go  -t $TOGGL_API -d -c project  # debug
 */
 package main
