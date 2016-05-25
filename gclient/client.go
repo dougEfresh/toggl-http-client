@@ -23,7 +23,7 @@ const Endpoint = "/clients"
 //    tc,err := gclient.NewClient(tc)
 func NewClient(thc *gtoggl.TogglHttpClient, options ...ToggleClientOptionFunc) (*TogglClient, error) {
 	tc := &TogglClient{
-		thc:             thc,
+		thc: thc,
 	}
 	// Run the options on it
 	for _, option := range options {
@@ -36,8 +36,8 @@ func NewClient(thc *gtoggl.TogglHttpClient, options ...ToggleClientOptionFunc) (
 }
 
 type TogglClient struct {
-	thc             *gtoggl.TogglHttpClient
-	endpoint        string
+	thc      *gtoggl.TogglHttpClient
+	endpoint string
 }
 
 func (tc *TogglClient) List() (Clients, error) {
