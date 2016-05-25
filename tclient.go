@@ -15,6 +15,7 @@ const (
 	DefaultGzipEnabled  = false
 	DefaultUrl          = "https://www.toggl.com/api/v8"
 	DefaultVersion      = "v8"
+	TogglCreator        = "github.com/dougEresh/gtoggl"
 )
 
 // Client is an Toggl REST client. Created by calling NewClient.
