@@ -51,11 +51,7 @@ func (tc *TogglClient) List() (Clients, error) {
 }
 
 func (tc *TogglClient) Get(id uint64) (*Client, error) {
-	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id))
-	if err != nil {
-		return nil, err
-	}
-	return clientResponse(body)
+	return clientResponse(tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id)))
 }
 
 func (tc *TogglClient) Create(c *Client) (*Client, error) {
@@ -64,11 +60,7 @@ func (tc *TogglClient) Create(c *Client) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := tc.thc.PostRequest(tc.endpoint, body)
-	if err != nil {
-		return nil, err
-	}
-	return clientResponse(response)
+	return clientResponse(tc.thc.PostRequest(tc.endpoint, body))
 }
 
 func (tc *TogglClient) Update(c *Client) (*Client, error) {
@@ -77,11 +69,7 @@ func (tc *TogglClient) Update(c *Client) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, c.Id), body)
-	if err != nil {
-		return nil, err
-	}
-	return clientResponse(response)
+	return clientResponse(tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, c.Id), body))
 }
 
 func (tc *TogglClient) Delete(id uint64) error {
@@ -103,7 +91,10 @@ type clientCreateRequest struct {
 	Client Client `json:"client"`
 }
 
-func clientResponse(response *json.RawMessage) (*Client, error) {
+func clientResponse(response *json.RawMessage, error error) (*Client, error) {
+	if error != nil {
+		return nil, error
+	}
 	var tResp gtoggl.TogglResponse
 	err := json.Unmarshal(*response, &tResp)
 	if err != nil {

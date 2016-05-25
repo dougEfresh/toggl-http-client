@@ -59,11 +59,7 @@ type UserClient struct {
 }
 
 func (c *UserClient) Get(realatedData bool) (*User, error) {
-	body, err := c.thc.GetRequest(c.endpoint)
-	if err != nil {
-		return nil, err
-	}
-	return userResponse(body)
+	return userResponse(c.thc.GetRequest(c.endpoint))
 }
 
 func (c *UserClient) Create(email, password, timezone string) (*User, error) {
@@ -73,11 +69,7 @@ func (c *UserClient) Create(email, password, timezone string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := c.thc.PostRequest(c.signupEndpoint, body)
-	if err != nil {
-		return nil, err
-	}
-	return userResponse(response)
+	return userResponse(c.thc.PostRequest(c.signupEndpoint, body))
 }
 
 func (c *UserClient) Update(u *User) (*User, error) {
@@ -87,11 +79,7 @@ func (c *UserClient) Update(u *User) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := c.thc.PutRequest(c.endpoint, body)
-	if err != nil {
-		return nil, err
-	}
-	return userResponse(response)
+	return userResponse(c.thc.PutRequest(c.endpoint, body))
 }
 
 func (c *UserClient) ResetToken() (string, error) {
@@ -105,7 +93,10 @@ func (c *UserClient) ResetToken() (string, error) {
 
 }
 
-func userResponse(response *json.RawMessage) (*User, error) {
+func userResponse(response *json.RawMessage, error error) (*User, error) {
+	if error != nil {
+		return nil, error
+	}
 	var tResp gtoggl.TogglResponse
 	err := json.Unmarshal(*response, &tResp)
 	if err != nil {

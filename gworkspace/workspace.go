@@ -40,11 +40,7 @@ type WorkspaceClient struct {
 
 //GET https://www.toggl.com/api/v8/workspaces/123213
 func (wc *WorkspaceClient) Get(id uint64) (*Workspace, error) {
-	body, err := wc.tc.GetRequest(fmt.Sprintf("%s/%d", wc.endpoint, id))
-	if err != nil {
-		return nil, err
-	}
-	return workspaceResponse(body)
+	return workspaceResponse(wc.tc.GetRequest(fmt.Sprintf("%s/%d", wc.endpoint, id)))
 }
 
 //PUT https://www.toggl.com/api/v8/workspaces
@@ -54,11 +50,7 @@ func (wc *WorkspaceClient) Update(ws *Workspace) (*Workspace, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := wc.tc.PutRequest(fmt.Sprintf("%s/%d", wc.endpoint, ws.Id), body)
-	if err != nil {
-		return nil, err
-	}
-	return workspaceResponse(response)
+	return workspaceResponse(wc.tc.PutRequest(fmt.Sprintf("%s/%d", wc.endpoint, ws.Id), body))
 }
 
 //GET https://www.toggl.com/api/v8/workspaces
@@ -72,7 +64,10 @@ func (wc *WorkspaceClient) List() (Workspaces, error) {
 	return workspaces, err
 }
 
-func workspaceResponse(response *json.RawMessage) (*Workspace, error) {
+func workspaceResponse(response *json.RawMessage, error error) (*Workspace, error) {
+	if error != nil {
+		return nil, error
+	}
 	var tResp gtoggl.TogglResponse
 	var ws Workspace
 	err := json.Unmarshal(*response, &tResp)

@@ -51,11 +51,7 @@ func (tc *ProjectClient) List() (Projects, error) {
 }
 
 func (tc *ProjectClient) Get(id uint64) (*Project, error) {
-	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id))
-	if err != nil {
-		return nil, err
-	}
-	return projectResponse(body)
+	return projectResponse(tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id)))
 }
 
 func (tc *ProjectClient) Create(p *Project) (*Project, error) {
@@ -64,11 +60,7 @@ func (tc *ProjectClient) Create(p *Project) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := tc.thc.PostRequest(tc.endpoint, body)
-	if err != nil {
-		return nil, err
-	}
-	return projectResponse(response)
+	return projectResponse(tc.thc.PostRequest(tc.endpoint, body))
 }
 
 func (tc *ProjectClient) Update(p *Project) (*Project, error) {
@@ -77,11 +69,8 @@ func (tc *ProjectClient) Update(p *Project) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, p.Id), body)
-	if err != nil {
-		return nil, err
-	}
-	return projectResponse(response)
+
+	return projectResponse(tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, p.Id), body))
 }
 
 func (tc *ProjectClient) Delete(id uint64) error {
@@ -89,7 +78,10 @@ func (tc *ProjectClient) Delete(id uint64) error {
 	return err
 }
 
-func projectResponse(response *json.RawMessage) (*Project, error) {
+func projectResponse(response *json.RawMessage, error error) (*Project, error) {
+	if error != nil {
+		return nil, error
+	}
 	var tResp gtoggl.TogglResponse
 	err := json.Unmarshal(*response, &tResp)
 	if err != nil {
