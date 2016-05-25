@@ -64,9 +64,9 @@ func client(tc *gtoggl.TogglHttpClient, args []string) {
 	if args[0] == "create" && len(args) > 1 {
 		err = json.Unmarshal([]byte(args[1]), &client)
 		handleError(err)
-		client, err = c.Create(&client)
+		nClient, err := c.Create(&client)
 		handleError(err)
-		fmt.Printf("%+v\n", client)
+		fmt.Printf("%+v\n", nClient)
 	}
 
 	if args[0] == "update" && len(args) > 1 {
@@ -74,17 +74,17 @@ func client(tc *gtoggl.TogglHttpClient, args []string) {
 		handleError(err)
 		_, err = c.Get(client.Id)
 		handleError(err)
-		client, err = c.Update(&client)
+		nClient, err := c.Update(&client)
 		handleError(err)
-		fmt.Printf("%+v\n", client)
+		fmt.Printf("%+v\n", nClient)
 	}
 
 	if args[0] == "get" && len(args) > 1 {
 		i, err := strconv.ParseUint(args[1], 0, 64)
 		handleError(err)
-		client, err = c.Get(i)
+		nClient, err := c.Get(i)
 		handleError(err)
-		fmt.Printf("%+v\n", client)
+		fmt.Printf("%+v\n", nClient)
 	}
 
 	if args[0] == "delete" && len(args) > 1 {
@@ -122,9 +122,9 @@ func workspace(tc *gtoggl.TogglHttpClient, args []string) {
 		handleError(err)
 		_, err := wsc.Get(uWs.Id)
 		handleError(err)
-		uWs, err = wsc.Update(uWs)
+		nWs, err := wsc.Update(&uWs)
 		handleError(err)
-		fmt.Printf("%+v\n", uWs)
+		fmt.Printf("%+v\n", nWs)
 		return
 	}
 }
@@ -155,13 +155,13 @@ func user(tc *gtoggl.TogglHttpClient, args []string) {
 		handleError(err)
 		_, err := wsc.Get(true)
 		handleError(err)
-		uWs, err = wsc.Update(&uWs)
+		nWs, err := wsc.Update(&uWs)
 		handleError(err)
-		fmt.Printf("%+v\n", uWs)
+		fmt.Printf("%+v\n", nWs)
 		return
 	}
 	if args[0] == "create" && len(args) > 2 {
-		var uWs guser.User
+		var uWs *guser.User
 		uWs, err = wsc.Create(args[1], args[2], args[3])
 		handleError(err)
 		js, err := json.Marshal(uWs)
