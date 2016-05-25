@@ -49,7 +49,7 @@ func TestWorkspaceGet(t *testing.T) {
 
 	workspace, err := workspaceClient.Get(1)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if workspace.Id != 1 {
 		t.Error("Workspace id != 1")

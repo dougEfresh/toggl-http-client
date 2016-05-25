@@ -2,6 +2,7 @@ package gtoggl
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -34,6 +35,10 @@ type TogglError struct {
 	Code   int
 	Status string
 	Msg    string
+}
+
+type TogglResponse struct {
+	Data *json.RawMessage `json:"data"`
 }
 
 func (e *TogglError) Error() string {
@@ -160,14 +165,20 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 	return nil, nil
 }
 
-func request(c *TogglHttpClient, method, endpoint string, body []byte) ([]byte, error) {
+var cookieJar = make(map[string]*http.Cookie, 10)
+
+func request(c *TogglHttpClient, method, endpoint string, body []byte) (*json.RawMessage, error) {
 	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
-	cookie := &http.Cookie{}
-	cookie.Name = "toggl_api_session_new"
-	cookie.Value = c.sessionCookie
+	cookie := cookieJar[c.sessionCookie]
+	if cookie == nil {
+		cookie = &http.Cookie{}
+		cookie.Name = "toggl_api_session_new"
+		cookie.Value = c.sessionCookie
+		cookieJar[c.sessionCookie] = cookie
+	}
 	req.AddCookie(cookie)
 	c.dumpRequest(req)
 	resp, err := c.client.Do(req)
@@ -176,6 +187,7 @@ func request(c *TogglHttpClient, method, endpoint string, body []byte) ([]byte, 
 	}
 	c.dumpResponse(resp)
 	defer resp.Body.Close()
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -183,26 +195,30 @@ func request(c *TogglHttpClient, method, endpoint string, body []byte) ([]byte, 
 	if resp.StatusCode >= 400 {
 		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
 	}
-	return b, err
-
+	var raw json.RawMessage
+	err = json.Unmarshal(b, &raw)
+	if err != nil {
+		return nil, err
+	}
+	return &raw, err
 }
 
 // Utility to POST requests
-func (c *TogglHttpClient) PostRequest(endpoint string, body []byte) ([]byte, error) {
+func (c *TogglHttpClient) PostRequest(endpoint string, body []byte) (*json.RawMessage, error) {
 	return request(c, "POST", endpoint, body)
 }
 
 // Utility to DELETE requests
-func (c *TogglHttpClient) DeleteRequest(endpoint string, body []byte) ([]byte, error) {
+func (c *TogglHttpClient) DeleteRequest(endpoint string, body []byte) (*json.RawMessage, error) {
 	return request(c, "DELETE", endpoint, body)
 }
 
 // Utility to PUT requests
-func (c *TogglHttpClient) PutRequest(endpoint string, body []byte) ([]byte, error) {
+func (c *TogglHttpClient) PutRequest(endpoint string, body []byte) (*json.RawMessage, error) {
 	return request(c, "PUT", endpoint, body)
 }
 
 // Utility to GET requests
-func (c *TogglHttpClient) GetRequest(endpoint string) ([]byte, error) {
+func (c *TogglHttpClient) GetRequest(endpoint string) (*json.RawMessage, error) {
 	return request(c, "GET", endpoint, nil)
 }

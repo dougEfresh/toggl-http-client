@@ -86,7 +86,7 @@ func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 func mockClient() *gtoggl.TogglHttpClient {
 	load()
 	httpClient := &http.Client{Transport: newMockTransport(getResponse())}
-	optionsWithClient := []gtoggl.ClientOptionFunc{gtoggl.SetHttpClient(httpClient)}
+	optionsWithClient := []gtoggl.ClientOptionFunc{gtoggl.SetHttpClient(httpClient),gtoggl.SetTraceLogger(testLogger)}
 	client, err := gtoggl.NewClient("abc1234567890def", optionsWithClient...)
 	if err != nil {
 		panic(err)

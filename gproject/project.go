@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dougEfresh/gtoggl"
+	"reflect"
 )
 
 // Toggl Project Definition
@@ -102,6 +103,10 @@ var defaultTransport = &projectTransport{}
 type projectResponse struct {
 	Data Project `json:"data"`
 }
+
+type projectResponseTest struct {
+	Data []byte `json:"data"`
+}
 type projectRequest struct {
 	Data Project `json:"data"`
 }
@@ -116,9 +121,15 @@ func (cl *projectTransport) Get(tc *ProjectClient, id uint64) (Project, error) {
 		return Project{}, err
 	}
 
-	var aux projectResponse
+	var aux projectResponseTest
+	var prj Project
 	err = json.Unmarshal(body, &aux)
-	return aux.Data, err
+	if err != nil {
+		return Project{}, err
+	}
+	reflect.TypeOf(prj)
+	err = json.Unmarshal(aux.Data, &prj)
+	return prj, err
 }
 
 //DELETE https://www.toggl.com/api/v8/projects/1239455
