@@ -5,7 +5,6 @@ go:
   - 1.6.2
 os:
   - linux
-  - osx
 script:
   - ./go.sh build -race
   - ./go.sh test -v 

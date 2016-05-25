@@ -21,7 +21,7 @@ const Endpoint = "/workspaces"
 //    wsc,err := gtoggl.NewWorkspaceClient(tc)
 func NewClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
 	ws := &WorkspaceClient{
-		tc:              tc,
+		tc: tc,
 	}
 	// Run the options on it
 	for _, option := range options {
@@ -34,8 +34,8 @@ func NewClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc)
 }
 
 type WorkspaceClient struct {
-	tc              *gtoggl.TogglHttpClient
-	endpoint        string
+	tc       *gtoggl.TogglHttpClient
+	endpoint string
 }
 
 //GET https://www.toggl.com/api/v8/workspaces/123213
@@ -75,13 +75,13 @@ func (wc *WorkspaceClient) List() (Workspaces, error) {
 func workspaceResponse(response *json.RawMessage) (*Workspace, error) {
 	var tResp gtoggl.TogglResponse
 	var ws Workspace
-	err := json.Unmarshal(*response,&tResp)
+	err := json.Unmarshal(*response, &tResp)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	err = json.Unmarshal(*tResp.Data,&ws)
+	err = json.Unmarshal(*tResp.Data, &ws)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	return &ws, err
 }
@@ -95,7 +95,6 @@ func workspaceResponse(response *json.RawMessage) (*Workspace, error) {
     }
 */
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
-
 
 type workspace_update_request struct {
 	Workspace *Workspace `json:"workspace"`

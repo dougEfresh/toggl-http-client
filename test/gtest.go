@@ -1,4 +1,4 @@
-package gworkspace
+package gtest
 
 import (
 	"bytes"
@@ -10,6 +10,10 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+type TestUtil struct {
+	Debug bool
+}
 
 type TestLogger struct {
 }
@@ -83,10 +87,10 @@ func (t *mockTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return response, nil
 }
 
-func mockClient() *gtoggl.TogglHttpClient {
+func (t TestUtil) MockClient() *gtoggl.TogglHttpClient {
 	load()
 	httpClient := &http.Client{Transport: newMockTransport(getResponse())}
-	optionsWithClient := []gtoggl.ClientOptionFunc{gtoggl.SetHttpClient(httpClient),gtoggl.SetTraceLogger(testLogger)}
+	optionsWithClient := []gtoggl.ClientOptionFunc{gtoggl.SetHttpClient(httpClient), gtoggl.SetTraceLogger(testLogger)}
 	client, err := gtoggl.NewClient("abc1234567890def", optionsWithClient...)
 	if err != nil {
 		panic(err)

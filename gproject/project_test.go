@@ -1,11 +1,16 @@
 package gproject
 
 import (
+	"github.com/dougEfresh/gtoggl/test"
+	"os"
 	"testing"
 )
 
+var _, debugMode = os.LookupEnv("GTOGGL_TEST_DEBUG")
+
 func togglClient() *ProjectClient {
-	client := mockClient()
+	tu := &gtest.TestUtil{Debug: debugMode}
+	client := tu.MockClient()
 	ws, err := NewClient(client)
 	if err != nil {
 		panic(err)
