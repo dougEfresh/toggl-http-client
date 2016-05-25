@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dougEfresh/gtoggl"
-	"reflect"
 )
 
 // Toggl Project Definition
@@ -24,12 +23,7 @@ const Endpoint = "/projects"
 //    pc,err := gproject.NewClient(tc)
 func NewClient(thc *gtoggl.TogglHttpClient, options ...ProjectClientOptionFunc) (*ProjectClient, error) {
 	tc := &ProjectClient{
-		thc:             thc,
-		listTransport:   defaultTransport,
-		getTransport:    defaultTransport,
-		updateTransport: defaultTransport,
-		createTransport: defaultTransport,
-		deleteTransport: defaultTransport,
+		thc: thc,
 	}
 	// Run the options on it
 	for _, option := range options {
@@ -42,49 +36,71 @@ func NewClient(thc *gtoggl.TogglHttpClient, options ...ProjectClientOptionFunc) 
 }
 
 type ProjectClient struct {
-	thc             *gtoggl.TogglHttpClient
-	endpoint        string
-	listTransport   ClientLister
-	getTransport    ClientGetter
-	updateTransport ClientUpdater
-	createTransport ClientCreater
-	deleteTransport ClientDeleter
+	thc      *gtoggl.TogglHttpClient
+	endpoint string
 }
 
 func (tc *ProjectClient) List() (Projects, error) {
-	return tc.listTransport.List(tc)
+	body, err := tc.thc.GetRequest(tc.endpoint)
+	var projects []Project
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(*body, &projects)
+	return projects, err
 }
 
-func (tc *ProjectClient) Get(id uint64) (Project, error) {
-	return tc.getTransport.Get(tc, id)
+func (tc *ProjectClient) Get(id uint64) (*Project, error) {
+	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id))
+	if err != nil {
+		return nil, err
+	}
+	return projectResponse(body)
 }
 
-func (tc *ProjectClient) Create(c *Project) (Project, error) {
-	return tc.createTransport.Create(tc, c)
+func (tc *ProjectClient) Create(p *Project) (*Project, error) {
+	put := projectUpdateRequest{Project: p}
+	body, err := json.Marshal(put)
+	if err != nil {
+		return nil, err
+	}
+	response, err := tc.thc.PostRequest(tc.endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+	return projectResponse(response)
 }
 
-func (tc *ProjectClient) Update(c *Project) (Project, error) {
-	return tc.updateTransport.Update(tc, c)
+func (tc *ProjectClient) Update(p *Project) (*Project, error) {
+	put := projectUpdateRequest{Project: p}
+	body, err := json.Marshal(put)
+	if err != nil {
+		return nil, err
+	}
+	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, p.Id), body)
+	if err != nil {
+		return nil, err
+	}
+	return projectResponse(response)
 }
 
 func (tc *ProjectClient) Delete(id uint64) error {
-	return tc.deleteTransport.Delete(tc, id)
+	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.endpoint, id), nil)
+	return err
 }
 
-type ClientLister interface {
-	List(tc *ProjectClient) (Projects, error)
-}
-type ClientGetter interface {
-	Get(tc *ProjectClient, id uint64) (Project, error)
-}
-type ClientUpdater interface {
-	Update(tc *ProjectClient, c *Project) (Project, error)
-}
-type ClientCreater interface {
-	Create(tc *ProjectClient, c *Project) (Project, error)
-}
-type ClientDeleter interface {
-	Delete(tc *ProjectClient, id uint64) error
+func projectResponse(response *json.RawMessage) (*Project, error) {
+	var tResp gtoggl.TogglResponse
+	err := json.Unmarshal(*response, &tResp)
+	if err != nil {
+		return nil, err
+	}
+	var p Project
+	err = json.Unmarshal(*tResp.Data, &p)
+	if err != nil {
+		return nil, err
+	}
+	return &p, err
 }
 
 //Configures a Client.
@@ -96,87 +112,11 @@ type ClientDeleter interface {
     }
 */
 type ProjectClientOptionFunc func(*ProjectClient) error
-type projectTransport struct{}
-
-var defaultTransport = &projectTransport{}
-
-type projectResponse struct {
-	Data Project `json:"data"`
-}
 
 type projectResponseTest struct {
 	Data []byte `json:"data"`
 }
-type projectRequest struct {
-	Data Project `json:"data"`
-}
+
 type projectUpdateRequest struct {
-	Project Project `json:"project"`
-}
-
-//GET https://www.toggl.com/api/v8/projects/1239455
-func (cl *projectTransport) Get(tc *ProjectClient, id uint64) (Project, error) {
-	body, err := tc.thc.GetRequest(fmt.Sprintf("%s/%d", tc.endpoint, id))
-	if err != nil {
-		return Project{}, err
-	}
-
-	var aux projectResponseTest
-	var prj Project
-	err = json.Unmarshal(body, &aux)
-	if err != nil {
-		return Project{}, err
-	}
-	reflect.TypeOf(prj)
-	err = json.Unmarshal(aux.Data, &prj)
-	return prj, err
-}
-
-//DELETE https://www.toggl.com/api/v8/projects/1239455
-func (cl *projectTransport) Delete(tc *ProjectClient, id uint64) error {
-	_, err := tc.thc.DeleteRequest(fmt.Sprintf("%s/%d", tc.endpoint, id), nil)
-	return err
-}
-
-//GET https://www.toggl.com/api/v8/projects/1239455
-func (cl *projectTransport) List(tc *ProjectClient) (Projects, error) {
-	body, err := tc.thc.GetRequest(tc.endpoint)
-	var Clients []Project
-	if err != nil {
-		return Clients, err
-	}
-	err = json.Unmarshal(body, &Clients)
-	return Clients, err
-}
-
-//PUT https://www.toggl.com/api/v8/projects/1239455
-func (cl *projectTransport) Update(tc *ProjectClient, c *Project) (Project, error) {
-	put := projectUpdateRequest{Project: *c}
-	body, err := json.Marshal(put)
-	if err != nil {
-		return Project{}, err
-	}
-	response, err := tc.thc.PutRequest(fmt.Sprintf("%s/%d", tc.endpoint, c.Id), body)
-	if err != nil {
-		return Project{}, err
-	}
-	var aux projectResponse
-	err = json.Unmarshal(response, &aux)
-	return aux.Data, err
-}
-
-//POST https://www.toggl.com/api/v8/projects
-func (cl *projectTransport) Create(tc *ProjectClient, c *Project) (Project, error) {
-	put := projectUpdateRequest{Project: *c}
-	body, err := json.Marshal(put)
-	if err != nil {
-		return Project{}, err
-	}
-	response, err := tc.thc.PostRequest(tc.endpoint, body)
-	if err != nil {
-		return Project{}, err
-	}
-	var aux projectResponse
-	err = json.Unmarshal(response, &aux)
-	return aux.Data, err
+	Project *Project `json:"project"`
 }
