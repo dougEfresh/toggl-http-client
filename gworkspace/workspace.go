@@ -22,12 +22,8 @@ const Endpoint = "/workspaces"
 func NewClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc) (*WorkspaceClient, error) {
 	ws := &WorkspaceClient{
 		tc:              tc,
-		listTransport:   defaultTransport,
-		getTransport:    defaultTransport,
-		updateTransport: defaultTransport,
 	}
 	// Run the options on it
-
 	for _, option := range options {
 		if err := option(ws); err != nil {
 			return nil, err
@@ -40,78 +36,54 @@ func NewClient(tc *gtoggl.TogglHttpClient, options ...WorkspaceClientOptionFunc)
 type WorkspaceClient struct {
 	tc              *gtoggl.TogglHttpClient
 	endpoint        string
-	listTransport   WorkspaceLister
-	getTransport    WorkspaceGetter
-	updateTransport WorkspaceUpdater
-}
-
-//https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
-func (wc *WorkspaceClient) Get(id uint64) (Workspace, error) {
-	return wc.getTransport.Get(wc, id, "")
-}
-
-//https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
-func (wc *WorkspaceClient) Update(ws Workspace) (Workspace, error) {
-	return wc.updateTransport.Update(wc, ws)
-}
-
-//https://github.com/toggl/toggl_api_docs/blob/master/chapters/workspaces.md
-func (wc *WorkspaceClient) List() (Workspaces, error) {
-	return wc.listTransport.List(wc)
-}
-
-//Ability to override the List method. Not yet implemented
-type WorkspaceLister interface {
-	List(wsc *WorkspaceClient) (Workspaces, error)
-}
-
-//Ability to override the Get method. Not yet implemented
-type WorkspaceGetter interface {
-	Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error)
-}
-
-//Ability to override the Update method. Not yet implemented
-type WorkspaceUpdater interface {
-	Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error)
 }
 
 //GET https://www.toggl.com/api/v8/workspaces/123213
-func (wl *workspaceTransport) Get(wsc *WorkspaceClient, id uint64, wtype string) (Workspace, error) {
-	body, err := wsc.tc.GetRequest(fmt.Sprintf("%s/%d", wsc.endpoint, id))
+func (wc *WorkspaceClient) Get(id uint64) (*Workspace, error) {
+	body, err := wc.tc.GetRequest(fmt.Sprintf("%s/%d", wc.endpoint, id))
 	if err != nil {
-		return Workspace{}, err
+		return nil, err
 	}
-
-	var aux workspace_response
-	err = json.Unmarshal(body, &aux)
-	return aux.Data, err
-}
-
-//GET https://www.toggl.com/api/v8/workspaces
-func (wl *workspaceTransport) List(wsc *WorkspaceClient) (Workspaces, error) {
-	body, err := wsc.tc.GetRequest(wsc.endpoint)
-	var workspaces []Workspace
-	if err != nil {
-		return workspaces, err
-	}
-	err = json.Unmarshal(body, &workspaces)
-	return workspaces, err
+	return workspaceResponse(body)
 }
 
 //PUT https://www.toggl.com/api/v8/workspaces
-func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Workspace, error) {
+func (wc *WorkspaceClient) Update(ws *Workspace) (*Workspace, error) {
 	put := workspace_update_request{Workspace: ws}
 	body, err := json.Marshal(put)
 	if err != nil {
-		return Workspace{}, err
+		return nil, err
 	}
-	response, err := wsc.tc.PutRequest(fmt.Sprintf("%s/%d", wsc.endpoint, ws.Id), body)
+	response, err := wc.tc.PutRequest(fmt.Sprintf("%s/%d", wc.endpoint, ws.Id), body)
 	if err != nil {
-		return Workspace{}, err
+		return nil, err
 	}
-	var aux workspace_response
-	err = json.Unmarshal(response, &aux)
-	return aux.Data, err
+	return workspaceResponse(response)
+}
+
+//GET https://www.toggl.com/api/v8/workspaces
+func (wc *WorkspaceClient) List() (Workspaces, error) {
+	body, err := wc.tc.GetRequest(wc.endpoint)
+	var workspaces Workspaces
+	if err != nil {
+		return workspaces, err
+	}
+	err = json.Unmarshal(*body, &workspaces)
+	return workspaces, err
+}
+
+func workspaceResponse(response *json.RawMessage) (*Workspace, error) {
+	var tResp gtoggl.TogglResponse
+	var ws Workspace
+	err := json.Unmarshal(*response,&tResp)
+	if err != nil {
+		return nil,err
+	}
+	err = json.Unmarshal(*tResp.Data,&ws)
+	if err != nil {
+		return nil,err
+	}
+	return &ws, err
 }
 
 //Configures a Client.
@@ -124,15 +96,7 @@ func (wl *workspaceTransport) Update(wsc *WorkspaceClient, ws Workspace) (Worksp
 */
 type WorkspaceClientOptionFunc func(*WorkspaceClient) error
 
-type workspaceTransport struct {
-}
-
-var defaultTransport = &workspaceTransport{}
-
-type workspace_response struct {
-	Data Workspace `json:"data"`
-}
 
 type workspace_update_request struct {
-	Workspace Workspace `json:"workspace"`
+	Workspace *Workspace `json:"workspace"`
 }
