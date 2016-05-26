@@ -6,10 +6,9 @@ go:
 before_install:
   - go get github.com/mattn/goveralls
   - go get golang.org/x/tools/cmd/cover
-script:
-  - $HOME/gopath/bin/goveralls -service=travis-ci
 os:
   - linux
 script:
-  - ./go.sh build -race
-  - ./go.sh test -v 
+  - go build -race
+  - go test -v 
+  - $HOME/gopath/bin/goveralls -service=travis-ci
