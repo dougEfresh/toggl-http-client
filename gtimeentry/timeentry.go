@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-// Toggl User Definition
 type TimeEntry struct {
 	Id          uint64                `json:"id,omitempty"`
 	Description string                `json:"description"`
@@ -97,33 +96,6 @@ func (c *TimeEntryClient) Update(t *TimeEntry) (*TimeEntry, error) {
 	}
 	return timeEntryResponse(c.thc.PutRequest(fmt.Sprintf("%s/%d", c.endpoint, t.Id), body))
 }
-
-/*
-func (c *TimeEntryClient) Create(email, password, timezone string) (*User, error) {
-	up := &UserCreate{Password: password, Email: email, Timezone: timezone, CreatedWith: "gtoggl"}
-	put := createRequest{User: up}
-	body, err := json.Marshal(put)
-	if err != nil {
-		return nil, err
-	}
-	response, err := c.thc.PostRequest(c.currentEndpoint, body)
-	if err != nil {
-		return nil, err
-	}
-	return timeEntryResponse(response)
-}
-
-func (c *TimeEntryClient) ResetToken() (string, error) {
-	response, err := c.thc.PostRequest(c.startEndpoint, nil)
-	if err != nil {
-		return "", err
-	}
-	var aux string
-	err = json.Unmarshal(*response, &aux)
-	return aux, nil
-
-}
-*/
 
 func timeEntryResponse(response *json.RawMessage, error error) (*TimeEntry, error) {
 	if error != nil {
