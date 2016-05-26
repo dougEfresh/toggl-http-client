@@ -1,8 +1,7 @@
 // Copyright 2016 Douglas Chimento.  All rights reserved.
 
 /*
-Package gclient provides access to toggl REST API
-
+Package gclient provides access to toggl REST API.
 
 Example:
 	import "github/dougEfresh/gtoggl"

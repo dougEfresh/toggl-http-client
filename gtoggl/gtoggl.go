@@ -25,7 +25,7 @@ func (l *debugger) Printf(format string, v ...interface{}) {
 func main() {
 	var debug = flag.Bool("d", false, "Debug")
 	var token = flag.String("t", "", "Toggl API token: https://www.toggl.com/app/profile")
-	var command = flag.String("c", "workspace", "Sub command: workspace,client,project...etc ")
+	var command = flag.String("c", "workspace", "command: workspace,client,project...etc ")
 	flag.Parse()
 	tc, err := gtoggl.NewClient(*token, gtoggl.SetTraceLogger(&debugger{debug: *debug}))
 	if err != nil {
