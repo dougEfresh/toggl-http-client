@@ -11,11 +11,23 @@
 **Example:**
 
 ```sh
-$ go get gopkg.in/dougEfresh/gtoggl.v8.0.1
+$ go get gopkg.in/dougEfresh/gtoggl.v8
 ```
 
 You then import it with this import path:
 
 ```go
-import "gopkg.in/dougEfresh/gtoggl.v8.0.1"
+import "gopkg.in/dougEfresh/gtoggl.v8"
+import "github/dougEfresh/gtoggl/gtimeentry"
+
+func main() {
+	thc, err := gtoggl.NewClient("token")
+	...
+	tc, err := gtimeentry.NewClient(thc)
+	...
+	timeentry,err := tc.Get(1)
+	if err == nil {
+		panic(err)
+	}
+}
 ```
