@@ -7,7 +7,7 @@ import (
 	"gopkg.in/dougEfresh/gtoggl.v8"
 	"gopkg.in/dougEfresh/gworkspace.v8"
 	"gopkg.in/dougEfresh/gclient.v8"
-	"gopkg.in/dougEfresh/gproject.v8"
+	"gopkg.in/dougEfresh/guser.v8"
 	"os"
 	"strconv"
 )
