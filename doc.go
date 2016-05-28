@@ -4,18 +4,18 @@
 Package gtoggl access to toggl REST API
 
 Example:
-	import "github/dougEfresh/gtoggl"
-	import "github/dougEfresh/gtoggl/gclient"
+        import "gopkg.in/dougEfresh/gtoggl.v8"
+        import "ggopkg.in/dougEfresh/toggl-timeentry.v8"
 
-	func main() {
-		thc, err := gtoggl.NewClient("token")
-		thc, err = gtoggl.NewClient("token",gtoggl.SetURL("https://www.toggl.com/api/v8/")
-		...
-		...
-		clients,err := tc.List()
-		if err == nil {
-			panic(err)
-		}
+        func main() {
+	    thc, err := gtoggl.NewClient("token")
+	    ...
+	    tc, err := gtimeentry.NewClient(thc)
+	    ...
+	    timeentry,err := tc.Get(1)
+	    if err == nil {
+		panic(err)
+	    }
 	}
 */
 package gtoggl
