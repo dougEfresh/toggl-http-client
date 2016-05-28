@@ -5,9 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"gopkg.in/dougEfresh/gtoggl.v8"
-	"gopkg.in/dougEfresh/toggl-workspace.v8"
 	"gopkg.in/dougEfresh/toggl-client.v8"
 	"gopkg.in/dougEfresh/toggl-user.v8"
+	"gopkg.in/dougEfresh/toggl-workspace.v8"
 	"os"
 	"strconv"
 )
