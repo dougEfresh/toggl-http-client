@@ -1,4 +1,4 @@
-package gtoggl
+package ghttp
 
 import (
 	"bytes"
