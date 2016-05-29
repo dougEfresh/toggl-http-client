@@ -11,17 +11,6 @@
 **Example:**
 
 ```sh
-go get gopkg.in/dougEfresh/toggl-http-client.v8 gopkg.in/dougEfresh/toggl-timeentry.v8
+go get gopkg.in/dougEfresh/toggl-http-client.v8
 ```
 
-
-```go
-import "gopkg.in/dougEfresh/toggl-http-client.v8"
-
-func main() {
-	thc, err := toggl-http-client.NewClient("token")
-	if err == nil {
-		panic(err)
-	}
-}
-```
