@@ -36,7 +36,7 @@ func (c *TogglHttpClient) dumpRequest(r *http.Request) {
 	if c.traceLog != nil {
 		out, err := httputil.DumpRequestOut(r, true)
 		if err == nil {
-			c.tracef("%s\n", string(out))
+			c.tracef("\n\n%s\n", string(out))
 		}
 	}
 
@@ -47,7 +47,7 @@ func (c *TogglHttpClient) dumpResponse(resp *http.Response) {
 	if c.traceLog != nil {
 		out, err := httputil.DumpResponse(resp, true)
 		if err == nil {
-			c.tracef("%s\n", string(out))
+			c.tracef("\n\n%s\n", string(out))
 		}
 	}
 }
