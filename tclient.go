@@ -167,7 +167,16 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 
 var cookieJar = make(map[string]*http.Cookie, 10)
 
-func request(c *TogglHttpClient, method, endpoint string, body []byte) (*json.RawMessage, error) {
+func request(c *TogglHttpClient, method, endpoint string, b interface{}) (*json.RawMessage, error) {
+	var body []byte
+	var err error
+	if b != nil {
+		body, err = json.Marshal(b)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
@@ -188,7 +197,7 @@ func request(c *TogglHttpClient, method, endpoint string, body []byte) (*json.Ra
 	c.dumpResponse(resp)
 	defer resp.Body.Close()
 
-	b, err := ioutil.ReadAll(resp.Body)
+	js, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -196,10 +205,10 @@ func request(c *TogglHttpClient, method, endpoint string, body []byte) (*json.Ra
 		return nil, nil
 	}
 	if resp.StatusCode >= 400 {
-		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
+		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(js)}
 	}
 	var raw json.RawMessage
-	err = json.Unmarshal(b, &raw)
+	err = json.Unmarshal(js, &raw)
 	if err != nil {
 		return nil, err
 	}
@@ -207,17 +216,17 @@ func request(c *TogglHttpClient, method, endpoint string, body []byte) (*json.Ra
 }
 
 // Utility to POST requests
-func (c *TogglHttpClient) PostRequest(endpoint string, body []byte) (*json.RawMessage, error) {
+func (c *TogglHttpClient) PostRequest(endpoint string, body interface{}) (*json.RawMessage, error) {
 	return request(c, "POST", endpoint, body)
 }
 
 // Utility to DELETE requests
-func (c *TogglHttpClient) DeleteRequest(endpoint string, body []byte) (*json.RawMessage, error) {
+func (c *TogglHttpClient) DeleteRequest(endpoint string, body interface{}) (*json.RawMessage, error) {
 	return request(c, "DELETE", endpoint, body)
 }
 
 // Utility to PUT requests
-func (c *TogglHttpClient) PutRequest(endpoint string, body []byte) (*json.RawMessage, error) {
+func (c *TogglHttpClient) PutRequest(endpoint string, body interface{}) (*json.RawMessage, error) {
 	return request(c, "PUT", endpoint, body)
 }
 
