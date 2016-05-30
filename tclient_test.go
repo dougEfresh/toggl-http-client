@@ -149,3 +149,49 @@ func TestClientDefaults(t *testing.T) {
 		t.Errorf("Session Cookie not found not defined %d", len(client.sessionCookie))
 	}
 }
+
+func Test400(t *testing.T) {
+	var h = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", mockRequest.contenttype)
+		w.WriteHeader(400)
+	}
+	server := httptest.NewServer(http.HandlerFunc(h))
+	defer server.Close()
+	testLogger := &TestLogger{t}
+	client, err := NewClient("abc1234567890def", SetURL(server.URL), SetTraceLogger(testLogger))
+	if err == nil {
+		t.Fatal("Should be 400")
+	}
+
+	if client != nil {
+		t.Fatal("client should be null")
+	}
+
+}
+
+func Test404(t *testing.T) {
+	var h = func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", mockRequest.contenttype)
+		if strings.Contains(r.URL.Path, "/sessions") {
+			w.Header().Set("Set-Cookie", "toggl_api_session_new=MTM2MzA4MJa8jA3OHxEdi1CQkFFQ180SUFBUkFCRUFBQVlQLUNBQUVHYzNSeWFXNW5EQXdBQ25ObGMzTnBiMjVmYVdRR2MzUnlhVzVuREQ0QVBIUnZaMmRzTFdGd2FTMXpaWE56YVc5dUxUSXRaalU1WmpaalpEUTVOV1ZsTVRoaE1UaGhaalpqWkRkbU5XWTJNV0psWVRnd09EWmlPVEV3WkE9PXweAkG7kI6NBG-iqvhNn1MSDhkz2Pz_UYTzdBvZjCaA==; Path=/; Expires=Wed, 13 Mar 2013 09:54:38 UTC; Max-Age=86400; HttpOnly")
+			io.WriteString(w, "")
+		} else {
+			w.WriteHeader(404)
+		}
+	}
+	server := httptest.NewServer(http.HandlerFunc(h))
+	defer server.Close()
+	testLogger := &TestLogger{t}
+	client, err := NewClient("abc1234567890def", SetURL(server.URL), SetTraceLogger(testLogger))
+	if err != nil {
+		t.Fatal("Error")
+	}
+	r, err := client.GetRequest(server.URL + "/whatever")
+	if r != nil {
+		t.Fatal("r should be null")
+	}
+	if err != nil {
+		t.Fatalf("err should be null %v", err)
+	}
+
+}

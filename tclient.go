@@ -149,17 +149,17 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 		return nil, err
 	}
 	c.dumpResponse(resp)
-	cookies := resp.Cookies()
-	for _, value := range cookies {
-		if value.Name == "toggl_api_session_new" {
-			c.sessionCookie = value.Value
-		}
-	}
 
 	if resp.StatusCode >= 400 {
 		defer resp.Body.Close()
 		b, _ := ioutil.ReadAll(resp.Body)
 		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
+	}
+	cookies := resp.Cookies()
+	for _, value := range cookies {
+		if value.Name == "toggl_api_session_new" {
+			c.sessionCookie = value.Value
+		}
 	}
 
 	return nil, nil
