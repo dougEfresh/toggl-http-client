@@ -192,6 +192,9 @@ func request(c *TogglHttpClient, method, endpoint string, body []byte) (*json.Ra
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode == 404 {
+		return nil, nil
+	}
 	if resp.StatusCode >= 400 {
 		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
 	}
