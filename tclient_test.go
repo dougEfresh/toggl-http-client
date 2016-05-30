@@ -2,6 +2,7 @@ package ghttp
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -159,6 +160,7 @@ func Test400(t *testing.T) {
 	defer server.Close()
 	testLogger := &TestLogger{t}
 	client, err := NewClient("abc1234567890def", SetURL(server.URL), SetTraceLogger(testLogger))
+	fmt.Printf("%s\n", err)
 	if err == nil {
 		t.Fatal("Should be 400")
 	}
@@ -183,6 +185,7 @@ func Test404(t *testing.T) {
 	defer server.Close()
 	testLogger := &TestLogger{t}
 	client, err := NewClient("abc1234567890def", SetURL(server.URL), SetTraceLogger(testLogger))
+
 	if err != nil {
 		t.Fatal("Error")
 	}

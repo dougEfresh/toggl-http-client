@@ -68,8 +68,13 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error
 			return nil, err
 		}
 	}
-
+	if c.infoLog != nil {
+		c.infoLog.Printf("Logging in with %s\n", key)
+	}
 	if len(key) < 1 {
+		if c.errorLog != nil {
+			c.errorLog.Printf("%s\n", "valid token required")
+		}
 		return nil, errors.New("Token required")
 	}
 
@@ -98,12 +103,7 @@ func SetHttpClient(httpClient *http.Client) ClientOptionFunc {
 // SetURL defines the base URL. See DefaultUrl
 func SetURL(url string) ClientOptionFunc {
 	return func(c *TogglHttpClient) error {
-		switch len(url) {
-		case 0:
-			c.Url = DefaultUrl
-		default:
-			c.Url = url
-		}
+		c.Url = url
 		return nil
 	}
 }
@@ -130,11 +130,6 @@ func SetInfoLogger(l Logger) ClientOptionFunc {
 		c.infoLog = l
 		return nil
 	}
-}
-
-// Returns the session cookie
-func (c *TogglHttpClient) String() string {
-	return fmt.Sprintf("{sessionCookie=%s}", c.sessionCookie)
 }
 
 func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
