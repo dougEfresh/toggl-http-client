@@ -70,9 +70,9 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error
 		version:     DefaultVersion,
 		gzipEnabled: DefaultGzipEnabled,
 		password:    DefaultAuthPassword,
-		errorLog: defaultLogger,
-		infoLog: defaultLogger,
-		traceLog: defaultLogger,
+		errorLog:    defaultLogger,
+		infoLog:     defaultLogger,
+		traceLog:    defaultLogger,
 	}
 
 	err := SetRateLimit(DefaultRateLimitPerSecond)(c)
@@ -167,9 +167,9 @@ func SetInfoLogger(l Logger) ClientOptionFunc {
 	}
 }
 
-type nullLogger struct {}
+type nullLogger struct{}
 
-func (l *nullLogger)  Printf(format string, v ...interface{}) {
+func (l *nullLogger) Printf(format string, v ...interface{}) {
 }
 
 var defaultLogger = &nullLogger{}
