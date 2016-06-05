@@ -207,12 +207,11 @@ func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}
 		return nil, err
 	}
 	if resp.StatusCode == 429 {
-		c.infoLog.Printf("Hit rate. Sleeping for %d ms.\n", attempt*100)
-		time.Sleep(time.Millisecond * time.Duration(attempt*100))
+		c.infoLog.Printf("Hit rate limit. Sleeping for %d ms.\n", attempt*500)
+		time.Sleep(time.Millisecond * time.Duration(attempt*500))
 		attempt += 1
 		return requestWithLimit(c, method, endpoint, b, attempt)
 	}
-
 	if resp.StatusCode == 404 {
 		return nil, nil
 	}
