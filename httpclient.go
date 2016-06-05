@@ -62,6 +62,7 @@ type ClientOptionFunc func(*TogglHttpClient) error
 //    tc,err := gtoggl.NewClient("token")
 func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error) {
 	// Set up the client
+
 	c := &TogglHttpClient{
 		client:      http.DefaultClient,
 		maxRetries:  DefaultMaxRetries,
@@ -69,6 +70,9 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error
 		version:     DefaultVersion,
 		gzipEnabled: DefaultGzipEnabled,
 		password:    DefaultAuthPassword,
+		errorLog: defaultLogger,
+		infoLog: defaultLogger,
+		traceLog: defaultLogger,
 	}
 
 	err := SetRateLimit(DefaultRateLimitPerSecond)(c)
@@ -162,6 +166,13 @@ func SetInfoLogger(l Logger) ClientOptionFunc {
 		return nil
 	}
 }
+
+type nullLogger struct {}
+
+func (l *nullLogger)  Printf(format string, v ...interface{}) {
+}
+
+var defaultLogger = &nullLogger{}
 
 func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", c.Url, "sessions"), nil)
