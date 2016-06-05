@@ -86,19 +86,14 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error
 			return nil, err
 		}
 	}
-	if c.infoLog != nil {
-		c.infoLog.Printf("Logging in with %s\n", key)
-	}
+	c.infoLog.Printf("Logging in with token: %s\n", key)
+
 	if len(key) < 1 {
-		if c.errorLog != nil {
-			c.errorLog.Printf("%s\n", "valid token required")
-		}
+		c.errorLog.Printf("%s\n", "valid token required")
 		return nil, errors.New("Token required")
 	}
 
-	_, err = c.authenticate(key)
-
-	if err != nil {
+	if err = c.authenticate(key); err != nil {
 		return nil, err
 	}
 
