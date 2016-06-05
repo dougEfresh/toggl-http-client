@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 const (
@@ -15,6 +17,7 @@ const (
 	DefaultGzipEnabled  = false
 	DefaultUrl          = "https://www.toggl.com/api/v8"
 	DefaultVersion      = "v8"
+	SessionCookieName   = "toggl_api_session_new"
 )
 
 // Client is an Toggl REST client. Created by calling NewClient.
@@ -138,7 +141,7 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 		return nil, err
 	}
 	c.dumpRequest(req)
-	req.SetBasicAuth(key, "api_token")
+	req.SetBasicAuth(key, DefaultAuthPassword)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
@@ -152,7 +155,7 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 	}
 	cookies := resp.Cookies()
 	for _, value := range cookies {
-		if value.Name == "toggl_api_session_new" {
+		if value.Name == SessionCookieName {
 			c.sessionCookie = value.Value
 		}
 	}
@@ -162,9 +165,16 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 
 var cookieJar = make(map[string]*http.Cookie, 10)
 
-func request(c *TogglHttpClient, method, endpoint string, b interface{}) (*json.RawMessage, error) {
+func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}, attempt int) (*json.RawMessage, error) {
+	if attempt > DefaultMaxRetries {
+		return nil, errors.New("Max Retries exceeded: " + strconv.FormatInt(DefaultMaxRetries, 10))
+	}
 	var body []byte
 	var err error
+	if err != nil {
+		return nil, err
+	}
+
 	if b != nil {
 		body, err = json.Marshal(b)
 		if err != nil {
@@ -179,7 +189,7 @@ func request(c *TogglHttpClient, method, endpoint string, b interface{}) (*json.
 	cookie := cookieJar[c.sessionCookie]
 	if cookie == nil {
 		cookie = &http.Cookie{}
-		cookie.Name = "toggl_api_session_new"
+		cookie.Name = SessionCookieName
 		cookie.Value = c.sessionCookie
 		cookieJar[c.sessionCookie] = cookie
 	}
@@ -196,6 +206,13 @@ func request(c *TogglHttpClient, method, endpoint string, b interface{}) (*json.
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode == 429 {
+		c.infoLog.Printf("Hit rate. Sleeping for %d ms.\n", attempt*100)
+		time.Sleep(time.Millisecond * time.Duration(attempt*100))
+		attempt += 1
+		return requestWithLimit(c, method, endpoint, b, attempt)
+	}
+
 	if resp.StatusCode == 404 {
 		return nil, nil
 	}
@@ -208,6 +225,10 @@ func request(c *TogglHttpClient, method, endpoint string, b interface{}) (*json.
 		return nil, err
 	}
 	return &raw, err
+}
+
+func request(c *TogglHttpClient, method, endpoint string, b interface{}) (*json.RawMessage, error) {
+	return requestWithLimit(c, method, endpoint, b, 1)
 }
 
 // Utility to POST requests
