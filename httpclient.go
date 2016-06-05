@@ -93,7 +93,7 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error
 		return nil, errors.New("Token required")
 	}
 
-	if err = c.authenticate(key); err != nil {
+	if _, err = c.authenticate(key); err != nil {
 		return nil, err
 	}
 
