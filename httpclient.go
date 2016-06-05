@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gopkg.in/throttled/throttled.v2"
+	"gopkg.in/throttled/throttled.v2/store/memstore"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -12,12 +14,14 @@ import (
 )
 
 const (
-	DefaultAuthPassword = "api_token"
-	DefaultMaxRetries   = 5
-	DefaultGzipEnabled  = false
-	DefaultUrl          = "https://www.toggl.com/api/v8"
-	DefaultVersion      = "v8"
-	SessionCookieName   = "toggl_api_session_new"
+	DefaultAuthPassword       = "api_token"
+	DefaultMaxRetries         = 5
+	DefaultGzipEnabled        = false
+	DefaultUrl                = "https://www.toggl.com/api/v8"
+	DefaultVersion            = "v8"
+	SessionCookieName         = "toggl_api_session_new"
+	defaultBucket             = "toggl"
+	DefaultRateLimitPerSecond = 3
 )
 
 // Client is an Toggl REST client. Created by calling NewClient.
@@ -32,6 +36,8 @@ type TogglHttpClient struct {
 	maxRetries    uint
 	sessionCookie string //24 hour session cookie
 	gzipEnabled   bool   // gzip compression enabled or disabled (default)
+	rateLimiter   *throttled.GCRARateLimiter
+	perSec        int
 }
 
 type TogglError struct {
@@ -65,6 +71,11 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error
 		password:    DefaultAuthPassword,
 	}
 
+	err := SetRateLimit(DefaultRateLimitPerSecond)(c)
+	if err != nil {
+		return nil, err
+	}
+
 	// Run the options on it
 	for _, option := range options {
 		if err := option(c); err != nil {
@@ -81,7 +92,7 @@ func NewClient(key string, options ...ClientOptionFunc) (*TogglHttpClient, error
 		return nil, errors.New("Token required")
 	}
 
-	_, err := c.authenticate(key)
+	_, err = c.authenticate(key)
 
 	if err != nil {
 		return nil, err
@@ -107,6 +118,23 @@ func SetHttpClient(httpClient *http.Client) ClientOptionFunc {
 func SetURL(url string) ClientOptionFunc {
 	return func(c *TogglHttpClient) error {
 		c.Url = url
+		return nil
+	}
+}
+
+// SetRateLimit Set custom rate limit per second
+func SetRateLimit(perSec int) ClientOptionFunc {
+	return func(c *TogglHttpClient) error {
+		store, err := memstore.New(65536)
+		if err != nil {
+			return err
+		}
+		quota := throttled.RateQuota{throttled.PerSec(perSec), 1}
+		c.rateLimiter, err = throttled.NewGCRARateLimiter(store, quota)
+		if err != nil {
+			return err
+		}
+		c.perSec = perSec
 		return nil
 	}
 }
@@ -166,13 +194,22 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 var cookieJar = make(map[string]*http.Cookie, 10)
 
 func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}, attempt int) (*json.RawMessage, error) {
+	c.infoLog.Printf("Request attempt %d for %s %s\n", attempt, method, endpoint)
 	if attempt > DefaultMaxRetries {
 		return nil, errors.New("Max Retries exceeded: " + strconv.FormatInt(DefaultMaxRetries, 10))
 	}
 	var body []byte
 	var err error
+
+	limited, reason, err := c.rateLimiter.RateLimit(defaultBucket, 1)
 	if err != nil {
 		return nil, err
+	}
+
+	if limited {
+		c.traceLog.Printf("Hit rate limit. Sleeping for %f ms.\n", float64(reason.RetryAfter)/1000000)
+		time.Sleep(reason.RetryAfter)
+		return requestWithLimit(c, method, endpoint, b, attempt+1)
 	}
 
 	if b != nil {
@@ -207,11 +244,11 @@ func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}
 		return nil, err
 	}
 	if resp.StatusCode == 429 {
-		c.infoLog.Printf("Hit rate limit. Sleeping for %d ms.\n", attempt*500)
+		c.errorLog.Printf("Hit (429) rate limit. Sleeping for %d ms.\n", attempt*500)
 		time.Sleep(time.Millisecond * time.Duration(attempt*500))
-		attempt += 1
-		return requestWithLimit(c, method, endpoint, b, attempt)
+		return requestWithLimit(c, method, endpoint, b, attempt+1)
 	}
+
 	if resp.StatusCode == 404 {
 		return nil, nil
 	}
