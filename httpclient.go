@@ -223,25 +223,19 @@ func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}
 		return requestWithLimit(c, method, endpoint, b, attempt+1)
 	}
 
-	if b != nil {
-		body, err = json.Marshal(b)
-		if err != nil {
-			return nil, err
-		}
+	if body, err = json.Marshal(b); err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest(method, endpoint, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
-	cookie := cookieJar[c.sessionCookie]
-	if cookie == nil {
-		cookie = &http.Cookie{}
-		cookie.Name = SessionCookieName
-		cookie.Value = c.sessionCookie
-		cookieJar[c.sessionCookie] = cookie
+	if cookieJar[c.sessionCookie] == nil {
+		cookieJar[c.sessionCookie] = &http.Cookie{Name: SessionCookieName, Value: c.sessionCookie}
 	}
-	req.AddCookie(cookie)
+
+	req.AddCookie(cookieJar[c.sessionCookie])
 	c.dumpRequest(req)
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -255,11 +249,10 @@ func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}
 		return nil, err
 	}
 	if resp.StatusCode == 429 {
-		c.errorLog.Printf("Hit (429) rate limit. Sleeping for %d ms.\n", attempt*500)
-		time.Sleep(time.Millisecond * time.Duration(attempt*500))
+		c.errorLog.Printf("Hit (429) rate limit. Sleeping for %d ms.\n", attempt*1000)
+		time.Sleep(time.Millisecond * time.Duration(attempt*1000))
 		return requestWithLimit(c, method, endpoint, b, attempt+1)
 	}
-
 	if resp.StatusCode == 404 {
 		return nil, nil
 	}
@@ -267,8 +260,7 @@ func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}
 		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(js)}
 	}
 	var raw json.RawMessage
-	err = json.Unmarshal(js, &raw)
-	if err != nil {
+	if json.Unmarshal(js, &raw) != nil {
 		return nil, err
 	}
 	return &raw, err
