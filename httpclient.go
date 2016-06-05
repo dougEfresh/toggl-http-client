@@ -38,6 +38,7 @@ type TogglHttpClient struct {
 	gzipEnabled   bool   // gzip compression enabled or disabled (default)
 	rateLimiter   *throttled.GCRARateLimiter
 	perSec        int
+	cookie        *http.Cookie
 }
 
 type TogglError struct {
@@ -187,17 +188,15 @@ func (c *TogglHttpClient) authenticate(key string) ([]byte, error) {
 		b, _ := ioutil.ReadAll(resp.Body)
 		return nil, &TogglError{Code: resp.StatusCode, Status: resp.Status, Msg: string(b)}
 	}
-	cookies := resp.Cookies()
-	for _, value := range cookies {
+	for _, value := range resp.Cookies() {
 		if value.Name == SessionCookieName {
-			c.sessionCookie = value.Value
+			c.infoLog.Printf("Setting Cookie\n")
+			c.cookie = value
 		}
 	}
 
 	return nil, nil
 }
-
-var cookieJar = make(map[string]*http.Cookie, 10)
 
 func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}, attempt int) (*json.RawMessage, error) {
 	c.infoLog.Printf("Request attempt %d for %s %s\n", attempt, method, endpoint)
@@ -226,11 +225,7 @@ func requestWithLimit(c *TogglHttpClient, method, endpoint string, b interface{}
 	if err != nil {
 		return nil, err
 	}
-	if cookieJar[c.sessionCookie] == nil {
-		cookieJar[c.sessionCookie] = &http.Cookie{Name: SessionCookieName, Value: c.sessionCookie}
-	}
-
-	req.AddCookie(cookieJar[c.sessionCookie])
+	req.AddCookie(c.cookie)
 	c.dumpRequest(req)
 	resp, err := c.client.Do(req)
 	if err != nil {
