@@ -26,19 +26,18 @@ const (
 
 // Client is an Toggl REST client. Created by calling NewClient.
 type TogglHttpClient struct {
-	client        *http.Client // net/http Client to use for requests
-	version       string       // v8
-	Url           string       // set of URLs passed initially to the client
-	errorLog      Logger       // error log for critical messages
-	infoLog       Logger       // information log for e.g. response times
-	traceLog      Logger       // trace log for debugging
-	password      string       // password for HTTP Basic Auth
-	maxRetries    uint
-	sessionCookie string //24 hour session cookie
-	gzipEnabled   bool   // gzip compression enabled or disabled (default)
-	rateLimiter   *throttled.GCRARateLimiter
-	perSec        int
-	cookie        *http.Cookie
+	client      *http.Client // net/http Client to use for requests
+	version     string       // v8
+	Url         string       // set of URLs passed initially to the client
+	errorLog    Logger       // error log for critical messages
+	infoLog     Logger       // information log for e.g. response times
+	traceLog    Logger       // trace log for debugging
+	password    string       // password for HTTP Basic Auth
+	maxRetries  uint
+	gzipEnabled bool // gzip compression enabled or disabled (default)
+	rateLimiter *throttled.GCRARateLimiter
+	perSec      int
+	cookie      *http.Cookie
 }
 
 type TogglError struct {

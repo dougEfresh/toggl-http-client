@@ -146,8 +146,8 @@ func TestClientDefaults(t *testing.T) {
 	if client.traceLog != testLogger || client.errorLog != testLogger || client.infoLog != testLogger {
 		t.Error("Loggers not set ")
 	}
-	if len(client.sessionCookie) < 1 {
-		t.Errorf("Session Cookie not found not defined %d", len(client.sessionCookie))
+	if client.cookie == nil {
+		t.Errorf("Session Cookie not found not defined\n")
 	}
 }
 
